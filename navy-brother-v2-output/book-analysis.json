@@ -1,0 +1,575 @@
+{
+  "bookAnalysis": {
+    "basicInfo": {
+      "genre": "都市言情 / 军人爽文 / 禁忌之恋",
+      "coreHook": "渣男友忘了接我5次，他当兵的哥哥却记得我的每一个眼神",
+      "keywords": ["男友哥哥", "海军特种兵", "芭蕾舞者", "渣男打脸", "禁忌之恋", "慢热", "年龄差", "霸总", "虐恋"]
+    },
+    
+    "bookDNA": {
+      "geneticCode": "FORB-8E4A-9C1D",
+      "emotionWave": [
+        {"chapter": 1, "value": -0.3, "emotion": "压力焦虑", "color": "#808080"},
+        {"chapter": 2, "value": -0.5, "emotion": "被羞辱", "color": "#696969"},
+        {"chapter": 3, "value": -0.4, "emotion": "失望愤怒", "color": "#778899"},
+        {"chapter": 4, "value": 0.2, "emotion": "小确幸", "color": "#87CEEB"},
+        {"chapter": 5, "value": -0.2, "emotion": "纠结", "color": "#A9A9A9"},
+        {"chapter": 6, "value": 0.3, "emotion": "温暖", "color": "#FFD700"},
+        {"chapter": 7, "value": 0.6, "emotion": "心动炸裂", "color": "#FF6347"},
+        {"chapter": 8, "value": -0.6, "emotion": "被抛弃", "color": "#4B0082"}
+      ],
+      "paceRhythm": [
+        {"chapter": 1, "bpm": 110, "pace": "中快"},
+        {"chapter": 2, "bpm": 90, "pace": "中等"},
+        {"chapter": 3, "bpm": 100, "pace": "中等"},
+        {"chapter": 4, "bpm": 85, "pace": "中慢"},
+        {"chapter": 5, "bpm": 95, "pace": "中等"},
+        {"chapter": 6, "bpm": 80, "pace": "慢"},
+        {"chapter": 7, "bpm": 120, "pace": "快"},
+        {"chapter": 8, "bpm": 105, "pace": "中快"}
+      ],
+      "coolPointDensity": [
+        {"chapter": 1, "density": 0.4},
+        {"chapter": 2, "density": 0.2},
+        {"chapter": 3, "density": 0.3},
+        {"chapter": 4, "density": 0.5},
+        {"chapter": 5, "density": 0.3},
+        {"chapter": 6, "density": 0.6},
+        {"chapter": 7, "density": 0.9},
+        {"chapter": 8, "density": 0.7}
+      ],
+      "conflictIntensity": [
+        {"chapter": 1, "intensity": 0.7},
+        {"chapter": 2, "intensity": 0.8},
+        {"chapter": 3, "intensity": 0.6},
+        {"chapter": 4, "intensity": 0.3},
+        {"chapter": 5, "intensity": 0.5},
+        {"chapter": 6, "intensity": 0.4},
+        {"chapter": 7, "intensity": 0.8},
+        {"chapter": 8, "intensity": 0.9}
+      ]
+    },
+    
+    "addictionIndex": {
+      "score": 8.5,
+      "level": "极易上头",
+      "factors": {
+        "suspenseHooks": {
+          "score": 9,
+          "weight": 0.25,
+          "count": 10,
+          "examples": [
+            "渣男友第5次忘记接她",
+            "男友哥哥突然回家",
+            "走廊碰撞身体接触",
+            "男友抛弃她去派对"
+          ]
+        },
+        "emotionalInvestment": {
+          "score": 9,
+          "weight": 0.20,
+          "reason": "女主在渣男关系里挣扎，读者恨铁不成钢，期待她醒悟"
+        },
+        "paceControl": {
+          "score": 8,
+          "weight": 0.15,
+          "reason": "前6章铺垫渣男，第7章男二炸裂登场，节奏完美"
+        },
+        "rewardFrequency": {
+          "score": 8,
+          "weight": 0.20,
+          "reason": "每章都有情感爆点，从芭蕾成就到心动时刻"
+        },
+        "cliffhangers": {
+          "score": 9,
+          "weight": 0.20,
+          "count": 8,
+          "examples": [
+            "男友哥哥冷漠盯着她看",
+            "渣男抛弃她，男二目送她离开",
+            "每次抬头，他都在看她"
+          ]
+        }
+      },
+      "prediction": {
+        "bingeProbability": 0.90,
+        "averageReadingTime": "3-4小时",
+        "dropRate": 0.08,
+        "rereadRate": 0.45
+      },
+      "warnings": [
+        "慢热，急性子读者可能不耐烦",
+        "渣男太渣，部分读者会骂女主圣母",
+        "禁忌题材（男友哥哥）可能引争议"
+      ]
+    },
+    
+    "characters": {
+      "protagonist": {
+        "name": "Penelope 'Penny' Vale",
+        "age": 19,
+        "occupation": "芭蕾舞者（班里最年轻）",
+        "personality": ["完美主义", "讨好型人格", "忠诚", "敏感", "努力", "缺乏安全感"],
+        "arc": "恋爱脑 → 意识到渣男本质 → 被真男人吸引 → 开始质疑选择",
+        "likability": 8.5,
+        "relatability": 9.0,
+        "complexity": 8.8
+      },
+      "supporting": [
+        {
+          "name": "Asher Hayes",
+          "role": "男二/真男人/Tyler哥哥",
+          "age": "25-27岁（估计）",
+          "occupation": "海军特种兵（服役3年）",
+          "personality": ["冷酷", "强势", "受伤", "保护欲", "观察力强", "自控力强"],
+          "description": "6尺3寸，黑色波浪长发过下巴，肌肉爆炸，黑色紧身衣，深色眼睛"
+        },
+        {
+          "name": "Tyler Hayes",
+          "role": "渣男友/反派",
+          "age": "19-20岁",
+          "occupation": "大学生，运动健将",
+          "personality": ["表面暖男", "健忘", "逃避冲突", "自私", "不成熟"],
+          "description": "6尺，精瘦运动型，棕色乱发，阳光笑容"
+        },
+        {
+          "name": "Madame Loretto",
+          "role": "芭蕾导师/严师",
+          "personality": ["严苛", "完美主义", "公正"],
+          "relationship": "狠批Penny但认可她天赋"
+        },
+        {
+          "name": "Mila",
+          "role": "闺蜜/唯一真朋友",
+          "personality": ["支持", "直率", "佛系", "看透渣男"],
+          "relationship": "Penny唯一的真朋友，看穿Tyler"
+        },
+        {
+          "name": "Rebecca",
+          "role": "校霸/反派",
+          "personality": ["恶毒", "操控", "嫉妒"],
+          "relationship": "长期霸凌Penny"
+        },
+        {
+          "name": "Zoe",
+          "role": "白莲花/潜在威胁",
+          "relationship": "Tyler帮她补课，现在跟Rebecca混"
+        },
+        {
+          "name": "Jonathan (Jo)",
+          "role": "暖男同学",
+          "personality": ["幽默", "善良", "艺术"],
+          "relationship": "逗Penny笑，提供轻松时刻"
+        }
+      ],
+      "relationships": [
+        {
+          "from": "Penny",
+          "to": "Tyler",
+          "type": "恋爱关系（崩塌中）",
+          "description": "初恋，但他健忘、冷漠、情感缺失"
+        },
+        {
+          "from": "Penny",
+          "to": "Asher",
+          "type": "禁忌吸引",
+          "description": "强烈化学反应，危险的拉扯，无法言说的张力"
+        },
+        {
+          "from": "Asher",
+          "to": "Penny",
+          "type": "保护欲/吸引",
+          "description": "表面冷漠但无法移开视线，看穿Tyler"
+        },
+        {
+          "from": "Tyler",
+          "to": "Penny",
+          "type": "习惯/理所当然",
+          "description": "把她当理所当然，优先考虑别人"
+        }
+      ]
+    },
+    
+    "plot": {
+      "structure": "慢热禁忌言情",
+      "act1": {
+        "chapters": "1-4",
+        "summary": "铺垫女主世界",
+        "keyEvents": [
+          "芭蕾课挣扎，最后逆袭",
+          "Tyler第5次忘记接她",
+          "Rebecca校园霸凌",
+          "Tyler护着Zoe不护Penny",
+          "Jonathan带来小确幸"
+        ]
+      },
+      "act2": {
+        "chapters": "5-6",
+        "summary": "关系裂痕",
+        "keyEvents": [
+          "Tyler道歉但不理解",
+          "去Hayes家吃饭",
+          "温暖家庭氛围对比",
+          "为'惊喜'铺垫"
+        ]
+      },
+      "act3": {
+        "chapters": "7-8",
+        "summary": "男二登场炸裂",
+        "keyEvents": [
+          "Asher出现-瞬间心动",
+          "Asher冷漠敌对",
+          "晚餐紧张，Asher嗤笑芭蕾",
+          "Hayes妈妈为Asher道歉",
+          "走廊碰撞充满张力",
+          "Tyler抛弃Penny去派对",
+          "Penny独自走回家，Asher目送"
+        ]
+      },
+      "mainConflicts": [
+        "Penny和Tyler的toxic关系",
+        "Rebecca团伙霸凌",
+        "芭蕾Gala压力",
+        "对Asher的禁忌吸引",
+        "讨好型人格 vs 真实需求"
+      ],
+      "climax": "第7-8章 - Asher登场，瞬间化学反应，尽管他冷漠"
+    },
+    
+    "goldenQuotes": [
+      "我不需要表扬，不需要掌声，我只需要舞蹈",
+      "你不用扛着这些，我在这里",
+      "真朋友不会这么快离开你",
+      "他对大多数人都这样，冷漠、简短",
+      "他的工作不容易，不是那种下班就能放下的",
+      "每次我抬头，他都已经在看我了"
+    ],
+    
+    "highlights": [
+      {
+        "event": "女主芭蕾课被骂后完美逆袭",
+        "type": "爽点",
+        "emotion": "骄傲/成就",
+        "impact": 8,
+        "webNovelStyle": "被骂废物？下一秒完美表演打脸全场！",
+        "suitableFor": ["励志短视频", "逆袭素材"],
+        "similarScenes": ["《黑天鹅》训练场景", "《舞出我人生》"]
+      },
+      {
+        "event": "Rebecca走廊残忍霸凌，问Tyler女主是否给他口",
+        "type": "虐点",
+        "emotion": "羞辱/愤怒",
+        "impact": 10,
+        "webNovelStyle": "校霸当众羞辱：你这么清高，给你男友口过吗？",
+        "suitableFor": ["dramatic场景", "反派高光"],
+        "similarScenes": ["《流言女孩》Blair霸凌", "《致命女人》"]
+      },
+      {
+        "event": "Tyler为Zoe辩护不为Penny",
+        "type": "虐点",
+        "emotion": "背叛",
+        "impact": 8,
+        "webNovelStyle": "我被霸凌，他却说：你想多了",
+        "suitableFor": ["渣男红旗视频", "toxic relationship警示"]
+      },
+      {
+        "event": "Jonathan搞笑涂鸦逗笑Penny",
+        "type": "温暖",
+        "emotion": "轻松",
+        "impact": 6,
+        "webNovelStyle": "暖男同学的沙雕涂鸦治愈了我",
+        "suitableFor": ["可爱片段", "友情"]
+      },
+      {
+        "event": "Hayes家温暖晚餐",
+        "type": "温暖",
+        "emotion": "归属感",
+        "impact": 7,
+        "webNovelStyle": "男友父母比我亲妈还疼我",
+        "suitableFor": ["家庭温情", "对比"]
+      },
+      {
+        "event": "Asher门口首次出现-身材爆炸",
+        "type": "爽点",
+        "emotion": "心动/张力",
+        "impact": 10,
+        "webNovelStyle": "推开门，6尺3的海军特种兵站在那，我腿软了",
+        "suitableFor": ["短视频", "book trailer", "男二登场"],
+        "similarScenes": ["《暮光之城》Edward登场", "《五十度灰》Christian"]
+      },
+      {
+        "event": "Asher冷漠说'你迟到了'",
+        "type": "虐点",
+        "emotion": "震惊/受伤",
+        "impact": 7,
+        "webNovelStyle": "男友哥哥第一句话：你迟到了，这就是你的感谢方式？",
+        "suitableFor": ["dramatic场景", "人物关系"]
+      },
+      {
+        "event": "Penny撞上Asher胸膛",
+        "type": "爽点",
+        "emotion": "张力/心动",
+        "impact": 10,
+        "webNovelStyle": "撞上他胸膛那一刻，我以为撞上了墙",
+        "suitableFor": ["romantic tension视频", "慢热"],
+        "similarScenes": ["《傲慢与偏见》舞会", "《泰坦尼克号》"]
+      },
+      {
+        "event": "Tyler抛弃Penny去派对",
+        "type": "虐点",
+        "emotion": "被抛弃",
+        "impact": 9,
+        "webNovelStyle": "家庭聚会他溜去派对，连条消息都不发",
+        "suitableFor": ["dramatic场景", "转折点"],
+        "similarScenes": ["《欲望都市》Carrie被放鸽子"]
+      },
+      {
+        "event": "Penny独自走回家，Asher目送",
+        "type": "虐点+爽点",
+        "emotion": "孤独/暗恋",
+        "impact": 9,
+        "webNovelStyle": "他抛弃我，他哥哥却一直看着我离开",
+        "suitableFor": ["chapter ending", "book trailer"],
+        "similarScenes": ["《诺丁山》雨中场景"]
+      }
+    ]
+  },
+  
+  "sellingPoints": [
+    {
+      "pointId": "SP001",
+      "title": "渣男友 vs 真男人",
+      "oneLinePitch": "他忘了接我5次，他哥哥却记得我的每一个眼神",
+      "webNovelTags": ["渣男", "打脸", "男友哥哥", "真爱", "对比"],
+      "similarBooks": [
+        {
+          "title": "《暮光之城》",
+          "similarity": "普通男友 vs 危险男人",
+          "successRegion": ["美国", "英国", "全球"]
+        },
+        {
+          "title": "《五十度灰》",
+          "similarity": "Alpha male + 禁忌吸引",
+          "successRegion": ["美国", "英国", "欧洲"]
+        },
+        {
+          "title": "《After》系列",
+          "similarity": "Toxic relationship + 真爱救赎",
+          "successRegion": ["美国", "Wattpad全球"]
+        }
+      ],
+      "targetAudience": "18-30岁女性，经历过渣男的",
+      "emotionalTrigger": "共鸣+愤怒+期待打脸",
+      "platforms": ["TikTok", "Facebook", "Instagram"],
+      "regions": ["美国", "英国", "加拿大", "澳大利亚"],
+      "contentType": "对比视频：渣男 vs 真男人",
+      "estimatedROI": "1:8",
+      "testBudget": "$500",
+      "priority": "极高"
+    },
+    {
+      "pointId": "SP002",
+      "title": "禁忌之恋-男友的哥哥",
+      "oneLinePitch": "爱上男友的海军特种兵哥哥，我完了",
+      "webNovelTags": ["禁忌", "男友哥哥", "军人", "慢热", "张力"],
+      "similarBooks": [
+        {
+          "title": "《The Kissing Booth》",
+          "similarity": "Brother's best friend变体",
+          "successRegion": ["美国", "Netflix全球"]
+        },
+        {
+          "title": "《Beautiful Disaster》",
+          "similarity": "Bad boy + 禁忌吸引",
+          "successRegion": ["美国", "BookTok"]
+        }
+      ],
+      "targetAudience": "Romance readers, 禁忌题材粉丝",
+      "emotionalTrigger": "禁忌+罪恶感+欲望",
+      "platforms": ["TikTok", "Instagram", "BookTok"],
+      "regions": ["美国", "英国", "加拿大"],
+      "contentType": "禁忌张力视频",
+      "estimatedROI": "1:7",
+      "testBudget": "$600",
+      "priority": "极高"
+    },
+    {
+      "pointId": "SP003",
+      "title": "海军特种兵霸总",
+      "oneLinePitch": "6尺3海军特种兵，冷酷危险，却只盯着我看",
+      "webNovelTags": ["军人", "霸总", "Alpha male", "保护欲", "受伤英雄"],
+      "similarBooks": [
+        {
+          "title": "《Dear John》",
+          "similarity": "军人浪漫",
+          "successRegion": ["美国"]
+        },
+        {
+          "title": "《The Lucky One》",
+          "similarity": "退伍军人+创伤",
+          "successRegion": ["美国"]
+        }
+      ],
+      "targetAudience": "Military romance粉丝，Alpha male爱好者",
+      "emotionalTrigger": "保护欲+力量+危险",
+      "platforms": ["TikTok", "Facebook", "Amazon Ads"],
+      "regions": ["美国", "英国", "澳大利亚"],
+      "contentType": "军人hero视频",
+      "estimatedROI": "1:6",
+      "testBudget": "$400",
+      "priority": "高"
+    },
+    {
+      "pointId": "SP004",
+      "title": "芭蕾舞者的完美主义",
+      "oneLinePitch": "为了芭蕾我可以不要命，为了他我可以不要芭蕾",
+      "webNovelTags": ["芭蕾", "完美主义", "逆袭", "梦想"],
+      "similarBooks": [
+        {
+          "title": "《黑天鹅》",
+          "similarity": "芭蕾+心理压力",
+          "successRegion": ["全球"]
+        },
+        {
+          "title": "《Center Stage》",
+          "similarity": "芭蕾学校+竞争",
+          "successRegion": ["美国"]
+        }
+      ],
+      "targetAudience": "舞蹈爱好者，完美主义者",
+      "emotionalTrigger": "共鸣+压力+成就",
+      "platforms": ["TikTok", "Instagram", "YouTube"],
+      "regions": ["美国", "台湾", "新加坡"],
+      "contentType": "芭蕾训练视频",
+      "estimatedROI": "1:5",
+      "testBudget": "$300",
+      "priority": "中"
+    },
+    {
+      "pointId": "SP005",
+      "title": "慢热张力-每次抬头他都在看我",
+      "oneLinePitch": "他表面冷漠，却无法移开视线",
+      "webNovelTags": ["慢热", "张力", "暗恋", "眼神杀"],
+      "similarBooks": [
+        {
+          "title": "《Pride and Prejudice》",
+          "similarity": "Slow burn + 误解",
+          "successRegion": ["全球经典"]
+        },
+        {
+          "title": "《The Hating Game》",
+          "similarity": "表面冷漠实则心动",
+          "successRegion": ["美国", "BookTok"]
+        }
+      ],
+      "targetAudience": "Slow burn粉丝，张力爱好者",
+      "emotionalTrigger": "期待+挫折+欲望",
+      "platforms": ["TikTok", "Instagram", "BookTok"],
+      "regions": ["美国", "英国", "加拿大"],
+      "contentType": "眼神张力视频",
+      "estimatedROI": "1:7",
+      "testBudget": "$400",
+      "priority": "高"
+    }
+  ],
+  
+  "audienceProfile": {
+    "primary": {
+      "age": "18-30岁",
+      "gender": "女性为主(90%)",
+      "occupation": ["大学生", "年轻职场人", "艺术工作者"],
+      "education": "高中及以上",
+      "income": "中低到中等收入",
+      "location": ["美国", "英国", "加拿大", "澳大利亚", "新加坡", "台湾"]
+    },
+    "psychographics": {
+      "interests": ["romance", "芭蕾/舞蹈", "军人浪漫", "禁忌之恋", "慢热", "年龄差", "toxic relationship恢复"],
+      "painPoints": ["toxic relationships", "被理所当然", "霸凌", "完美主义", "讨好型人格", "初恋挣扎"],
+      "desires": ["真爱", "被看见和珍视", "激情连接", "逃离toxic模式", "Alpha male保护"],
+      "emotionalState": ["寻求认可", "质疑当前关系", "渴望强度", "想被选择"]
+    },
+    "suitableFor": [
+      "禁忌浪漫粉丝",
+      "军人浪漫读者",
+      "慢热爱好者",
+      "Alpha male粉丝",
+      "从toxic关系恢复的人",
+      "芭蕾/舞蹈爱好者",
+      "New Adult romance粉丝",
+      "Brother's best friend trope粉丝"
+    ],
+    "notSuitableFor": [
+      "想要instant romance的读者",
+      "对出轨题材不适的人",
+      "不喜欢冷漠男主的读者",
+      "霸凌内容trigger的人",
+      "想要轻松甜文的读者"
+    ]
+  },
+  
+  "regionalStrategy": {
+    "note": "基于相似军人浪漫+禁忌题材书籍的成功数据",
+    "coreMarkets": [
+      {
+        "country": "美国",
+        "budget": "35%",
+        "matchScore": 0.95,
+        "language": "英文",
+        "platforms": ["TikTok", "Facebook", "Instagram", "Amazon Kindle", "BookTok"],
+        "strategy": "禁忌浪漫 + 军人hero + 渣男对比",
+        "dataSource": "参考《After》《Beautiful Disaster》在美国BookTok的成功",
+        "targetAudience": "18-30岁女性，romance readers, BookTok社区"
+      },
+      {
+        "country": "英国",
+        "budget": "18%",
+        "matchScore": 0.92,
+        "language": "英文",
+        "platforms": ["TikTok", "Facebook", "Instagram", "Amazon Kindle"],
+        "strategy": "慢热 + Alpha male + 芭蕾舞者",
+        "dataSource": "参考军人浪漫在英国的表现",
+        "targetAudience": "New Adult romance读者"
+      },
+      {
+        "country": "加拿大",
+        "budget": "12%",
+        "matchScore": 0.90,
+        "language": "英文",
+        "platforms": ["TikTok", "Facebook", "Instagram"],
+        "strategy": "跟随美国策略",
+        "dataSource": "通常跟随美国市场趋势",
+        "targetAudience": "18-28岁女性"
+      },
+      {
+        "country": "澳大利亚",
+        "budget": "10%",
+        "matchScore": 0.88,
+        "language": "英文",
+        "platforms": ["TikTok", "Instagram", "Facebook"],
+        "strategy": "军人浪漫 + 禁忌之恋",
+        "dataSource": "军人题材在澳洲受欢迎",
+        "targetAudience": "Romance readers"
+      },
+      {
+        "country": "台湾",
+        "budget": "8%",
+        "matchScore": 0.82,
+        "language": "繁体中文翻译",
+        "platforms": ["Facebook", "Instagram", "TikTok"],
+        "strategy": "禁忌之恋 + 军人英雄 + 芭蕾舞者",
+        "dataSource": "言情小说在台湾市场表现",
+        "targetAudience": "18-28岁女性，言情小说读者"
+      },
+      {
+        "country": "新加坡",
+        "budget": "7%",
+        "matchScore": 0.85,
+        "language": "英文",
+        "platforms": ["Facebook", "Instagram", "TikTok"],
+        "strategy": "禁忌浪漫 + Alpha male",
+        "dataSource": "英文romance在新加坡的接受度",
+        "targetAudience": "年轻女性读者"
+      }
+    ]
+  }
+}
