@@ -1,0 +1,243 @@
+{
+  "targetBook": {
+    "title": "The Defiant Hero",
+    "authors": [
+      "Suzanne Brockmann"
+    ],
+    "categories": [
+      "Fiction"
+    ],
+    "averageRating": 5,
+    "ratingsCount": 1
+  },
+  "similarBooks": [
+    {
+      "title": "Into the Storm",
+      "authors": [
+        "Suzanne Brockmann"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 4,
+      "ratingsCount": 3,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "http://books.google.co.jp/books?id=jNhlAAAAMAAJ&dq=Navy+SEAL+Suzanne+Brockmann&hl=&source=gbs_api",
+      "price": null
+    },
+    {
+      "title": "Gone Too Far",
+      "authors": [
+        "Suzanne Brockmann"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=aobHYuH3pJwC&source=gbs_api",
+      "price": {
+        "amount": 1830,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "Into the Night",
+      "authors": [
+        "Suzanne Brockmann"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 4,
+      "ratingsCount": 2,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=Ksh3xyRPNeQC&source=gbs_api",
+      "price": {
+        "amount": 1830,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "Breaking the Rules",
+      "authors": [
+        "Suzanne Brockmann"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 3.5,
+      "ratingsCount": 3,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=TVudYcZo5dMC&source=gbs_api",
+      "price": {
+        "amount": 1625,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "The Unsung Hero",
+      "authors": [
+        "Suzanne Brockmann"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=a9acY_QGJCEC&source=gbs_api",
+      "price": {
+        "amount": 812,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "Hot Target",
+      "authors": [
+        "Suzanne Brockmann"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=IPEj1Ntnz94C&source=gbs_api",
+      "price": {
+        "amount": 2032,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "A SEAL at Heart",
+      "authors": [
+        "Anne Elizabeth"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=dYrPCgAAQBAJ&source=gbs_api",
+      "price": {
+        "amount": 1337,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "The Coming Home Series Boxed Set (Romantic Suspense) (Military Romance) (Thriller Suspense)",
+      "authors": [
+        "Meli Raine"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=IgIhDAAAQBAJ&source=gbs_api",
+      "price": {
+        "amount": 1719,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "A Question of Loyalty",
+      "authors": [
+        "Kate Lace"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=5onCDwAAQBAJ&source=gbs_api",
+      "price": {
+        "amount": 515,
+        "currencyCode": "JPY"
+      }
+    },
+    {
+      "title": "The SOLDIER: Steamy Military Romance",
+      "authors": [
+        "Juliette N. Banks"
+      ],
+      "categories": [
+        "Fiction"
+      ],
+      "averageRating": 0,
+      "ratingsCount": 0,
+      "similarity": 80,
+      "reasons": [
+        "类型匹配",
+        "热度相近",
+        "受众年龄匹配",
+        "长度相近"
+      ],
+      "link": "https://play.google.com/store/books/details?id=ERorEQAAQBAJ&source=gbs_api",
+      "price": {
+        "amount": 1199,
+        "currencyCode": "JPY"
+      }
+    }
+  ],
+  "generatedAt": "2026-03-05T12:28:29.325Z"
+}
