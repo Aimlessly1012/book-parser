@@ -124,7 +124,13 @@ function generateAnalysisPrompt(chapters) {
   // 取前10章的完整内容
   const sampleChapters = chapters.slice(0, Math.min(10, chapters.length));
   
-  return `你是一位资深的图书编辑和营销专家。请分析以下书籍，生成完整的营销分析报告。
+  return `你是一位资深的网文编辑和营销专家，专注于爽文、言情小说的市场推广。请用网文读者的语言分析以下书籍。
+
+# 重要：文案风格要求
+- 使用网文爽点式语言，直接、刺激、有冲击力
+- 避免文学化、诗意化的表达
+- 用"打脸"、"逆袭"、"虐渣"、"爽"等网文术语
+- 卖点要一句话说清楚，让人一看就想点
 
 # 书籍信息
 - 总章节数：${bookInfo.totalChapters}
@@ -150,8 +156,8 @@ ${ch.content}
 {
   "bookAnalysis": {
     "basicInfo": {
-      "genre": "书籍类型（如：都市言情、职场励志等）",
-      "theme": "核心主题",
+      "genre": "书籍类型（如：都市爽文、豪门虐恋、重生复仇等）",
+      "coreHook": "一句话核心爽点（如：闺蜜睡了我未婚夫，我转身嫁给他死对头）",
       "keywords": ["关键词1", "关键词2", "关键词3"]
     },
     
@@ -183,7 +189,7 @@ ${ch.content}
           "score": 9,
           "weight": 0.25,
           "count": 15,
-          "examples": ["第5章：神秘男人的真实身份？"]
+          "examples": ["渣男真实身份曝光", "女主隐藏大佬身份"]
         },
         "emotionalInvestment": {
           "score": 8.5,
@@ -204,7 +210,7 @@ ${ch.content}
           "score": 8.5,
           "weight": 0.20,
           "count": 12,
-          "examples": ["第10章结尾：门外传来敲门声..."]
+          "examples": ["章末悬念：他竟然是..."]
         }
       },
       "prediction": {
@@ -213,7 +219,7 @@ ${ch.content}
         "dropRate": 0.12,
         "rereadRate": 0.35
       },
-      "warnings": ["第3章节奏稍慢，可能导致部分读者流失"]
+      "warnings": ["某章节奏稍慢，可能导致部分读者流失"]
     },
     
     "characters": {
@@ -229,7 +235,7 @@ ${ch.content}
       "supporting": [
         {
           "name": "配角姓名",
-          "role": "角色定位",
+          "role": "角色定位（如：渣男、白莲花、霸总、闺蜜）",
           "relationship": "与主角的关系"
         }
       ],
@@ -237,7 +243,7 @@ ${ch.content}
         {
           "from": "角色A",
           "to": "角色B",
-          "type": "关系类型（如：恋人、敌人、朋友）",
+          "type": "关系类型（如：前任、情敌、真爱）",
           "description": "关系描述"
         }
       ]
@@ -274,21 +280,54 @@ ${ch.content}
     
     "highlights": [
       {
-        "chapter": 1,
-        "scene": "发现男友出轨",
-        "type": "冲突",
-        "emotion": "愤怒",
-        "suitableFor": ["短视频", "图文"]
+        "event": "撞见未婚夫和闺蜜在床上",
+        "type": "虐点",
+        "emotion": "背叛、震惊",
+        "impact": 10,
+        "webNovelStyle": "推开门那一刻，我的世界崩了",
+        "suitableFor": ["3秒抓眼球视频", "dramatic reveal"],
+        "similarScenes": ["《三十而已》林有和许幻山", "《我的前半生》罗子君发现出轨"]
       },
       {
-        "chapter": 18,
-        "scene": "打脸前男友",
+        "event": "女主当众打脸渣男",
         "type": "爽点",
-        "emotion": "解气",
-        "suitableFor": ["短视频", "漫画"]
+        "emotion": "解气、痛快",
+        "impact": 9,
+        "webNovelStyle": "当初你爱答不理，现在我让你高攀不起",
+        "suitableFor": ["打脸爽文视频", "逆袭素材"],
+        "similarScenes": ["《杜拉拉升职记》职场反击"]
       }
     ]
   },
+  
+  "sellingPoints": [
+    {
+      "pointId": "SP001",
+      "title": "闺蜜+未婚夫双重背叛",
+      "oneLinePitch": "闺蜜睡了我未婚夫两年，还说我不配被爱",
+      "webNovelTags": ["背叛", "打脸", "复仇", "逆袭"],
+      "similarBooks": [
+        {
+          "title": "《三十而已》",
+          "similarity": "闺蜜背叛",
+          "successRegion": ["中国", "台湾", "新加坡"]
+        },
+        {
+          "title": "《我的前半生》",
+          "similarity": "婚姻背叛+女性独立",
+          "successRegion": ["中国", "香港"]
+        }
+      ],
+      "targetAudience": "25-35岁，经历过背叛的女性",
+      "emotionalTrigger": "共鸣+愤怒+期待复仇",
+      "platforms": ["TikTok", "Facebook"],
+      "regions": ["美国", "台湾", "新加坡"],
+      "contentType": "3秒虐点+15秒反转",
+      "estimatedROI": "1:6",
+      "testBudget": "$500",
+      "priority": "极高"
+    }
+  ],
   
   "audienceProfile": {
     "primary": {
@@ -338,39 +377,48 @@ ${ch.content}
       }
     ]
   },
+  },
   
-  "creativeDirections": [
-    {
-      "directionId": "D001",
-      "name": "职场逆袭角度",
-      "targetAudience": "职场新人、白领",
-      "targetRegion": ["美国", "台湾", "新加坡"],
-      "emotionalTrigger": "共鸣 + 励志",
-      "coreMessage": "3个月从底层到高管的秘密",
-      "keyChapters": [3, 8, 12, 30],
-      "keyScenes": [
-        "第3章：被同事欺负",
-        "第8章：首次反击成功",
-        "第30章：升职高管"
-      ],
-      "quotes": [
-        "你看不起我，我就让你高攀不起",
-        "职场没有眼泪，只有实力"
-      ],
-      "platforms": ["TikTok", "Facebook", "Google Ads"],
-      "estimatedROI": "1:5",
-      "priority": "高"
-    }
-  ]
+  "regionalStrategy": {
+    "note": "投放地区应基于相似类型书籍的成功案例数据",
+    "coreMarkets": [
+      {
+        "country": "美国",
+        "budget": "25%",
+        "matchScore": 0.85,
+        "language": "英文",
+        "platforms": ["TikTok", "Facebook", "Instagram", "Google Ads"],
+        "strategy": "基于相似书籍在美国的表现",
+        "dataSource": "参考同类型书籍投放数据"
+      }
+    ]
+  }
 }
 \`\`\`
 
-请确保：
-1. 所有数据都是基于实际内容分析得出
-2. 情感曲线、节奏等数据要覆盖所有章节
-3. 人物关系要完整准确
-4. 创意方向要具体可执行
-5. 输出严格的 JSON 格式，不要有多余的文字
+# 重要提示
+
+1. **文案风格**：必须使用网文爽点式语言
+   - ❌ 错误："从背叛到自我救赎的心灵之旅"
+   - ✅ 正确："闺蜜睡了我未婚夫！我转身嫁给千亿总裁打脸渣男"
+
+2. **卖点提取**：一句话说清楚
+   - 要直接、刺激、有冲击力
+   - 让人一看就想点进去看
+
+3. **高光场景**：用事件描述，不用章节号
+   - ❌ 错误："Chapter 2: 发现背叛"
+   - ✅ 正确："撞见未婚夫和闺蜜在床上，她当场扔掉戒指"
+
+4. **相似书籍**：尽量找到真实的相似爆款书
+   - 分析它们的成功卖点
+   - 参考它们的投放地区
+
+5. **投放地区**：基于数据而非猜测
+   - 看相似书籍在哪些地区火
+   - 参考同类型题材的成功案例
+
+请严格按照以上要求输出 JSON 格式的分析结果。
 
 开始分析：`;
 }
