@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+
+const https = require('https');
+const http = require('http');
+
+// 从环境变量读取配置
+const BOOK_API_URL = process.env.BOOK_API_URL || 'https://api.example.com';
+const BOOK_API_KEY = process.env.BOOK_API_KEY || '';
+
+// HTTP 请求封装
+function request(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const client = urlObj.protocol === 'https:' ? https : http;
+    
+    const req = client.request(url, {
+      method: options.method || 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': BOOK_API_KEY ? `Bearer ${BOOK_API_KEY}` : '',
+        ...options.headers,
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          resolve(data);
+        }
+      });
+    });
+    
+    req.on('error', reject);
+    if (options.body) req.write(JSON.stringify(options.body));
+    req.end();
+  });
+}
+
+// 获取章节列表
+async function getChapters(bookId, start = 1, end = 30) {
+  const url = `${BOOK_API_URL}/books/${bookId}/chapters?start=${start}&end=${end}`;
+  console.log(`[book-parser] Fetching chapters ${start}-${end} for book ${bookId}...`);
+  return await request(url);
+}
+
+// 获取章节内容
+async function getChapterContent(bookId, chapterId) {
+  const url = `${BOOK_API_URL}/books/${bookId}/chapters/${chapterId}`;
+  console.log(`[book-parser] Fetching chapter ${chapterId}...`);
+  return await request(url);
+}
+
+// 分析书籍
+async function analyzeBook(bookId, chapterCount = 20) {
+  console.log(`[book-parser] Analyzing book ${bookId}...`);
+  
+  // 获取章节列表
+  const chapters = await getChapters(bookId, 1, chapterCount);
+  console.log(`[book-parser] Found ${chapters.length || 0} chapters`);
+  
+  // 获取所有章节内容
+  const contents = [];
+  for (const chapter of chapters.slice(0, chapterCount)) {
+    const content = await getChapterContent(bookId, chapter.id);
+    contents.push({
+      id: chapter.id,
+      title: chapter.title,
+      content: content.text || content.content || '',
+    });
+  }
+  
+  // 输出结果
+  console.log(JSON.stringify({
+    bookId,
+    chapterCount: contents.length,
+    chapters: contents,
+  }, null, 2));
+}
+
+// 主函数
+async function main() {
+  const args = process.argv.slice(2);
+  const command = args[0];
+  
+  if (!command) {
+    console.log('Usage: book-parser <command> [options]');
+    console.log('Commands:');
+    console.log('  analyze <book_id> [--count 20]  - 分析书籍');
+    console.log('  chapters <book_id>              - 获取章节列表');
+    process.exit(1);
+  }
+  
+  try {
+    switch (command) {
+      case 'analyze': {
+        const bookId = args[1];
+        const countIdx = args.indexOf('--count');
+        const count = countIdx > -1 ? parseInt(args[countIdx + 1]) : 20;
+        await analyzeBook(bookId, count);
+        break;
+      }
+      case 'chapters': {
+        const bookId = args[1];
+        const chapters = await getChapters(bookId, 1, 30);
+        console.log(JSON.stringify(chapters, null, 2));
+        break;
+      }
+      default:
+        console.error(`Unknown command: ${command}`);
+        process.exit(1);
+    }
+  } catch (err) {
+    console.error('[book-parser] Error:', err.message);
+    process.exit(1);
+  }
+}
+
+main();
