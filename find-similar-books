@@ -1,0 +1,335 @@
+#!/usr/bin/env node
+
+/**
+ * Google Books API 相似书籍查找工具
+ * 用于查找和分析相似书籍的市场数据
+ */
+
+const https = require('https');
+
+// Google Books API 基础 URL
+const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
+
+/**
+ * 发起 HTTPS GET 请求
+ */
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+/**
+ * 搜索相似书籍
+ * @param {string} query - 搜索关键词
+ * @param {number} maxResults - 最大结果数
+ */
+async function searchBooks(query, maxResults = 10) {
+  const encodedQuery = encodeURIComponent(query);
+  const url = `${GOOGLE_BOOKS_API}?q=${encodedQuery}&maxResults=${maxResults}&orderBy=relevance&langRestrict=en`;
+  
+  console.log(`🔍 搜索: ${query}`);
+  const data = await httpsGet(url);
+  
+  if (!data.items) {
+    console.log('❌ 没有找到结果');
+    return [];
+  }
+  
+  return data.items.map(item => parseBookData(item));
+}
+
+/**
+ * 获取书籍详情
+ * @param {string} volumeId - Google Books Volume ID
+ */
+async function getBookDetails(volumeId) {
+  const url = `${GOOGLE_BOOKS_API}/${volumeId}`;
+  const data = await httpsGet(url);
+  return parseBookData(data);
+}
+
+/**
+ * 解析书籍数据
+ */
+function parseBookData(item) {
+  const info = item.volumeInfo || {};
+  const sale = item.saleInfo || {};
+  
+  return {
+    id: item.id,
+    title: info.title || 'Unknown',
+    authors: info.authors || [],
+    publishedDate: info.publishedDate || 'Unknown',
+    description: info.description || '',
+    categories: info.categories || [],
+    averageRating: info.averageRating || 0,
+    ratingsCount: info.ratingsCount || 0,
+    language: info.language || 'en',
+    pageCount: info.pageCount || 0,
+    maturityRating: info.maturityRating || 'NOT_MATURE',
+    imageLinks: info.imageLinks || {},
+    previewLink: info.previewLink || '',
+    infoLink: info.infoLink || '',
+    saleInfo: {
+      country: sale.country || 'US',
+      saleability: sale.saleability || 'NOT_FOR_SALE',
+      isEbook: sale.isEbook || false,
+      listPrice: sale.listPrice || null,
+      retailPrice: sale.retailPrice || null
+    }
+  };
+}
+
+/**
+ * 分析书籍相似度
+ */
+function analyzeSimilarity(targetBook, compareBook) {
+  let score = 0;
+  let reasons = [];
+  
+  // 类型匹配（最重要）
+  const targetCategories = targetBook.categories.map(c => c.toLowerCase());
+  const compareCategories = compareBook.categories.map(c => c.toLowerCase());
+  
+  const categoryMatch = targetCategories.some(tc => 
+    compareCategories.some(cc => cc.includes(tc) || tc.includes(cc))
+  );
+  
+  if (categoryMatch) {
+    score += 40;
+    reasons.push('类型匹配');
+  }
+  
+  // 评分相近
+  if (Math.abs(targetBook.averageRating - compareBook.averageRating) < 0.5) {
+    score += 20;
+    reasons.push('评分相近');
+  }
+  
+  // 评价数量级相近
+  const targetRatings = targetBook.ratingsCount || 1;
+  const compareRatings = compareBook.ratingsCount || 1;
+  const ratingsRatio = Math.max(targetRatings, compareRatings) / Math.min(targetRatings, compareRatings);
+  
+  if (ratingsRatio < 10) {
+    score += 20;
+    reasons.push('热度相近');
+  }
+  
+  // 成熟度匹配
+  if (targetBook.maturityRating === compareBook.maturityRating) {
+    score += 10;
+    reasons.push('受众年龄匹配');
+  }
+  
+  // 页数相近（长度相近）
+  if (targetBook.pageCount && compareBook.pageCount) {
+    const pageRatio = Math.max(targetBook.pageCount, compareBook.pageCount) / 
+                      Math.min(targetBook.pageCount, compareBook.pageCount);
+    if (pageRatio < 2) {
+      score += 10;
+      reasons.push('长度相近');
+    }
+  }
+  
+  return { score, reasons };
+}
+
+/**
+ * 查找相似书籍
+ */
+async function findSimilarBooks(bookTitle, keywords = []) {
+  console.log(`\n📚 查找与《${bookTitle}》相似的书籍...\n`);
+  
+  // 构建搜索查询
+  const queries = [
+    bookTitle,
+    ...keywords.map(k => `${k} romance`),
+    keywords.join(' ')
+  ];
+  
+  const allBooks = new Map();
+  
+  // 执行多个搜索
+  for (const query of queries) {
+    try {
+      const books = await searchBooks(query, 10);
+      books.forEach(book => {
+        if (!allBooks.has(book.id)) {
+          allBooks.set(book.id, book);
+        }
+      });
+      // 避免请求过快
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error(`❌ 搜索失败: ${query}`, error.message);
+    }
+  }
+  
+  return Array.from(allBooks.values());
+}
+
+/**
+ * 生成相似书籍报告
+ */
+function generateReport(targetBook, similarBooks) {
+  console.log('\n' + '='.repeat(80));
+  console.log(`📊 相似书籍分析报告`);
+  console.log('='.repeat(80));
+  
+  console.log(`\n目标书籍: ${targetBook.title}`);
+  console.log(`作者: ${targetBook.authors.join(', ')}`);
+  console.log(`类型: ${targetBook.categories.join(', ')}`);
+  console.log(`评分: ${targetBook.averageRating}/5 (${targetBook.ratingsCount} 评价)`);
+  
+  // 计算相似度并排序
+  const scored = similarBooks
+    .filter(book => book.id !== targetBook.id)
+    .map(book => ({
+      book,
+      similarity: analyzeSimilarity(targetBook, book)
+    }))
+    .sort((a, b) => b.similarity.score - a.similarity.score)
+    .slice(0, 10);
+  
+  console.log(`\n找到 ${scored.length} 本相似书籍:\n`);
+  
+  scored.forEach((item, index) => {
+    const { book, similarity } = item;
+    console.log(`${index + 1}. ${book.title}`);
+    console.log(`   作者: ${book.authors.join(', ')}`);
+    console.log(`   类型: ${book.categories.join(', ')}`);
+    console.log(`   评分: ${book.averageRating}/5 (${book.ratingsCount} 评价)`);
+    console.log(`   相似度: ${similarity.score}/100 - ${similarity.reasons.join(', ')}`);
+    if (book.saleInfo.listPrice) {
+      console.log(`   价格: ${book.saleInfo.listPrice.amount} ${book.saleInfo.listPrice.currencyCode}`);
+    }
+    console.log(`   链接: ${book.infoLink}`);
+    console.log('');
+  });
+  
+  return scored;
+}
+
+/**
+ * 生成 JSON 格式的相似书籍数据
+ */
+function generateJSON(targetBook, scoredBooks) {
+  return {
+    targetBook: {
+      title: targetBook.title,
+      authors: targetBook.authors,
+      categories: targetBook.categories,
+      averageRating: targetBook.averageRating,
+      ratingsCount: targetBook.ratingsCount
+    },
+    similarBooks: scoredBooks.map(item => ({
+      title: item.book.title,
+      authors: item.book.authors,
+      categories: item.book.categories,
+      averageRating: item.book.averageRating,
+      ratingsCount: item.book.ratingsCount,
+      similarity: item.similarity.score,
+      reasons: item.similarity.reasons,
+      link: item.book.infoLink,
+      price: item.book.saleInfo.listPrice
+    })),
+    generatedAt: new Date().toISOString()
+  };
+}
+
+/**
+ * 主函数
+ */
+async function main() {
+  const args = process.argv.slice(2);
+  
+  if (args.length === 0) {
+    console.log(`
+使用方法:
+  ./find-similar-books <书名> [关键词1] [关键词2] ...
+
+示例:
+  ./find-similar-books "After" "new adult" "toxic relationship"
+  ./find-similar-books "Falling for my boyfriend's Navy brother" "military romance" "forbidden love"
+  
+选项:
+  --json    输出 JSON 格式
+  --save    保存到文件
+    `);
+    process.exit(1);
+  }
+  
+  const bookTitle = args[0];
+  const keywords = args.slice(1).filter(arg => !arg.startsWith('--'));
+  const outputJSON = args.includes('--json');
+  const saveToFile = args.includes('--save');
+  
+  try {
+    // 先搜索目标书籍
+    console.log(`🔍 搜索目标书籍: ${bookTitle}`);
+    const targetResults = await searchBooks(bookTitle, 1);
+    
+    if (targetResults.length === 0) {
+      console.error('❌ 找不到目标书籍');
+      process.exit(1);
+    }
+    
+    const targetBook = targetResults[0];
+    
+    // 查找相似书籍
+    const similarBooks = await findSimilarBooks(bookTitle, keywords);
+    
+    // 生成报告
+    const scored = generateReport(targetBook, similarBooks);
+    
+    // 输出 JSON
+    if (outputJSON || saveToFile) {
+      const jsonData = generateJSON(targetBook, scored);
+      const jsonStr = JSON.stringify(jsonData, null, 2);
+      
+      if (saveToFile) {
+        const fs = require('fs');
+        const filename = `similar-books-${Date.now()}.json`;
+        fs.writeFileSync(filename, jsonStr);
+        console.log(`\n✅ 已保存到: ${filename}`);
+      }
+      
+      if (outputJSON) {
+        console.log('\n' + '='.repeat(80));
+        console.log('JSON 输出:');
+        console.log('='.repeat(80));
+        console.log(jsonStr);
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ 错误:', error.message);
+    process.exit(1);
+  }
+}
+
+// 如果直接运行
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  searchBooks,
+  getBookDetails,
+  findSimilarBooks,
+  analyzeSimilarity,
+  generateReport,
+  generateJSON
+};
