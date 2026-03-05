@@ -16,7 +16,8 @@ const API_CONFIG = {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Accept-Language': 'zh-CN'
+    'Accept-Language': 'zh-CN',
+    'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IkU4QzAzQjVGMzhENjQzRTE3OTQ4MEU1NkE2REI4QkQ5IiwidHlwIjoiYXQrand0In0.eyJuYmYiOjE3Njc3Nzk1NjUsImV4cCI6MTc5OTMxNTU2NSwiaXNzIjoiaHR0cHM6Ly9zdHMuYW55c3Rvcmllcy5hcHAiLCJjbGllbnRfaWQiOiJBdXRoQ2xpZW50Iiwic3ViIjoiMSIsImF1dGhfdGltZSI6MTc2Nzc3OTU2MiwiaWRwIjoibG9jYWwiLCJuaWNrbmFtZSI6IkFkbWluaXN0cmF0b3IiLCJuYW1lIjoiQWRtaW4iLCJzaWQiOiIzMTk2Mzk1QkZCMTE3OEM4N0UxODFDODE0M0VFNDJFMiIsImlhdCI6MTc2Nzc3OTU2NSwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiXSwiYW1yIjpbInB3ZCJdfQ.MVne9FeGKB-iyDBjXjyz4SJvb1RpYKgSS6mbKP_NOb5vsyCzvTau2NviD8QZbrFEWUBxq-kNCF5-XYm-nEZJ32KrDMRoDB4tNwTnGeR1c4svfNjxnBIdgJBEYY4czw7_z9o1ha5S-gdKJUVsKN46HAFngM-Om6il0I31MZbY1uDtX_a2NgOEuPNUhL7ppYLWUioF5GZ-7_Sw0lGuKV9GFzPMBlOJ0tfFjKv70UiSFylv8BIfmV7ZWWytePiOy4-YiqBwxi3BqCgC5cxgbYvz_twGSZNCY1d0WlsbT1IuPeanlQYYVlyx_g8ut9DYmOaV7b8uGWKUaHhsxCuZvu0EhQ'
   }
 };
 
@@ -57,11 +58,19 @@ async function searchBooks(params) {
   console.log(`🔍 查询书籍: ${params.bookName || params.bookId || '所有书籍'}`);
   
   try {
-    const data = await httpsPost(options, params);
-    return data;
+    const result = await httpsPost(options, params);
+    
+    // 检查返回数据结构
+    if (result && result.data && result.data.data) {
+      console.log(`   找到 ${result.data.data.length} 本书籍`);
+      return result;
+    } else {
+      console.log(`   未找到匹配书籍`);
+      return { data: { data: [] } };
+    }
   } catch (error) {
     console.error('❌ 查询失败:', error.message);
-    throw error;
+    return { data: { data: [] } };
   }
 }
 
@@ -71,9 +80,9 @@ async function searchBooks(params) {
 async function findSimilarBooks(keywords, options = {}) {
   const {
     timeGranularity = 'month',
-    timeDimension = ['2025-10', '2025-11'],
+    timeDimension = ['2025-01', '2025-03'],  // 修改为更早的时间
     bookLanguage = ['en'],
-    activeOnly = true,
+    activeOnly = false,  // 改为 false，查询所有书籍
     pageSize = 20,
     sortBy = 'totalAds',
     sortDirection = 'desc'
@@ -100,8 +109,8 @@ async function findSimilarBooks(keywords, options = {}) {
       
       const result = await searchBooks(params);
       
-      if (result.data && result.data.items) {
-        result.data.items.forEach(book => {
+      if (result.data && result.data.data) {
+        result.data.data.forEach(book => {
           if (!allBooks.has(book.bookId)) {
             allBooks.set(book.bookId, book);
           }
@@ -193,16 +202,19 @@ function generateReport(targetBookName, similarBooks) {
   
   // 按广告数量排序
   const sorted = similarBooks
-    .sort((a, b) => (b.totalAds || 0) - (a.totalAds || 0))
+    .sort((a, b) => (b.totalUniqueAds || 0) - (a.totalUniqueAds || 0))
     .slice(0, 20);
   
   sorted.forEach((book, index) => {
     console.log(`${index + 1}. ${book.bookName || 'Unknown'}`);
     console.log(`   书籍ID: ${book.bookId}`);
     console.log(`   语言: ${book.bookLanguage || 'Unknown'}`);
-    console.log(`   总广告数: ${book.totalAds || 0}`);
-    console.log(`   热度: ${book.heat || 0}`);
+    console.log(`   总广告数: ${book.totalUniqueAds || 0}`);
+    console.log(`   活跃广告数: ${book.activeUniqueAds || 0}`);
+    console.log(`   热度分数: ${book.heatScore || 0}`);
+    console.log(`   首次投放: ${book.firstSeen || 'Unknown'}`);
     console.log(`   最后投放: ${book.lastSeen || 'Unknown'}`);
+    console.log(`   活跃状态: ${book.activityStatus || 'Unknown'}`);
     
     if (book.tags && book.tags.length > 0) {
       console.log(`   标签: ${book.tags.join(', ')}`);
@@ -214,6 +226,10 @@ function generateReport(targetBookName, similarBooks) {
     
     if (book.channels && book.channels.length > 0) {
       console.log(`   投放渠道: ${book.channels.join(', ')}`);
+    }
+    
+    if (book.creativeTypes && book.creativeTypes.length > 0) {
+      console.log(`   素材类型: ${book.creativeTypes.join(', ')}`);
     }
     
     console.log('');
@@ -233,16 +249,20 @@ function generateJSON(targetBookName, books) {
       bookId: book.bookId,
       bookName: book.bookName,
       bookLanguage: book.bookLanguage,
-      totalAds: book.totalAds,
-      heat: book.heat,
+      totalUniqueAds: book.totalUniqueAds,
+      activeUniqueAds: book.activeUniqueAds,
+      heatScore: book.heatScore,
+      firstSeen: book.firstSeen,
       lastSeen: book.lastSeen,
       tags: book.tags || [],
       countries: book.countries || [],
       channels: book.channels || [],
-      regions: book.regions || [],
+      regions: book.allRegions || [],
       contentOrigin: book.contentOrigin,
       serializationStatus: book.serializationStatus,
-      activityStatus: book.activityStatus
+      activityStatus: book.activityStatus,
+      creativeTypes: book.creativeTypes || [],
+      cover: book.cover
     })),
     generatedAt: new Date().toISOString()
   };
