@@ -38,7 +38,10 @@ const bookContent = fs.readFileSync(bookFile, 'utf-8');
 // 解析章节
 function parseChapters(content) {
   const chapters = [];
-  const chapterRegex = /第[一二三四五六七八九十百千\d]+章\s+(.+?)(?=\n)/g;
+  // 支持两种格式：
+  // 1. 第一章 标题
+  // 2. 【第 1 章】标题
+  const chapterRegex = /(?:【第\s*\d+\s*章】|第[一二三四五六七八九十百千\d]+章)\s*(.+?)(?=\n)/g;
   
   let match;
   const positions = [];
