@@ -1,0 +1,373 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+// 解析命令行参数
+const args = process.argv.slice(2);
+const command = args[0];
+const bookFile = args[1];
+
+if (!command || !bookFile) {
+  console.log('Usage: ./book-parser analyze <book.txt> [--output <dir>] [--chapters <n>]');
+  process.exit(1);
+}
+
+// 解析可选参数
+let outputDir = './output';
+let maxChapters = null;
+
+for (let i = 2; i < args.length; i++) {
+  if (args[i] === '--output' && args[i + 1]) {
+    outputDir = args[i + 1];
+    i++;
+  } else if (args[i] === '--chapters' && args[i + 1]) {
+    maxChapters = parseInt(args[i + 1]);
+    i++;
+  }
+}
+
+// 读取书籍文件
+if (!fs.existsSync(bookFile)) {
+  console.error(`Error: File not found: ${bookFile}`);
+  process.exit(1);
+}
+
+const bookContent = fs.readFileSync(bookFile, 'utf-8');
+
+// 解析章节
+function parseChapters(content) {
+  const chapters = [];
+  const chapterRegex = /第[一二三四五六七八九十百千\d]+章\s+(.+?)(?=\n)/g;
+  
+  let match;
+  const positions = [];
+  
+  while ((match = chapterRegex.exec(content)) !== null) {
+    positions.push({
+      index: match.index,
+      title: match[0],
+      name: match[1]
+    });
+  }
+  
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i].index;
+    const end = i < positions.length - 1 ? positions[i + 1].index : content.length;
+    const chapterContent = content.substring(start, end).trim();
+    
+    chapters.push({
+      number: i + 1,
+      title: positions[i].title,
+      name: positions[i].name,
+      content: chapterContent,
+      wordCount: chapterContent.length
+    });
+    
+    if (maxChapters && chapters.length >= maxChapters) {
+      break;
+    }
+  }
+  
+  return chapters;
+}
+
+console.log('📚 解析书籍中...');
+const chapters = parseChapters(bookContent);
+console.log(`✅ 找到 ${chapters.length} 个章节`);
+
+// 创建输出目录
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir, { recursive: true });
+}
+
+// 保存章节信息
+const chaptersDir = path.join(outputDir, 'chapters');
+if (!fs.existsSync(chaptersDir)) {
+  fs.mkdirSync(chaptersDir, { recursive: true });
+}
+
+// 保存每个章节
+chapters.forEach((chapter, index) => {
+  const chapterFile = path.join(chaptersDir, `chapter-${String(index + 1).padStart(3, '0')}.json`);
+  fs.writeFileSync(chapterFile, JSON.stringify(chapter, null, 2));
+});
+
+console.log(`✅ 章节已保存到: ${chaptersDir}`);
+
+// 生成分析提示词
+const analysisPrompt = generateAnalysisPrompt(chapters);
+const promptFile = path.join(outputDir, 'analysis-prompt.txt');
+fs.writeFileSync(promptFile, analysisPrompt);
+
+console.log(`✅ 分析提示词已生成: ${promptFile}`);
+console.log('\n📝 下一步：');
+console.log('1. 复制 analysis-prompt.txt 的内容');
+console.log('2. 发送给 AI (Claude Sonnet 4.5)');
+console.log('3. AI 会返回完整的书籍分析 JSON');
+
+function generateAnalysisPrompt(chapters) {
+  const bookInfo = {
+    totalChapters: chapters.length,
+    totalWords: chapters.reduce((sum, ch) => sum + ch.wordCount, 0),
+    chapters: chapters.map(ch => ({
+      number: ch.number,
+      title: ch.title,
+      name: ch.name,
+      wordCount: ch.wordCount
+    }))
+  };
+  
+  // 取前10章的完整内容
+  const sampleChapters = chapters.slice(0, Math.min(10, chapters.length));
+  
+  return `你是一位资深的图书编辑和营销专家。请分析以下书籍，生成完整的营销分析报告。
+
+# 书籍信息
+- 总章节数：${bookInfo.totalChapters}
+- 总字数：${bookInfo.totalWords}
+
+# 章节列表
+${bookInfo.chapters.map(ch => `${ch.number}. ${ch.title} (${ch.wordCount}字)`).join('\n')}
+
+# 前10章完整内容
+${sampleChapters.map(ch => `
+## ${ch.title}
+
+${ch.content}
+
+---
+`).join('\n')}
+
+# 分析任务
+
+请按照以下 JSON 格式输出完整的分析结果：
+
+\`\`\`json
+{
+  "bookAnalysis": {
+    "basicInfo": {
+      "genre": "书籍类型（如：都市言情、职场励志等）",
+      "theme": "核心主题",
+      "keywords": ["关键词1", "关键词2", "关键词3"]
+    },
+    
+    "bookDNA": {
+      "geneticCode": "书籍基因码（如：AECB-9F2D-4A1C）",
+      "emotionWave": [
+        {"chapter": 1, "value": -0.8, "emotion": "愤怒", "color": "#FF0000"},
+        {"chapter": 5, "value": 0.5, "emotion": "希望", "color": "#FFD700"}
+      ],
+      "paceRhythm": [
+        {"chapter": 1, "bpm": 120, "pace": "快"},
+        {"chapter": 5, "bpm": 60, "pace": "慢"}
+      ],
+      "coolPointDensity": [
+        {"chapter": 1, "density": 0.2},
+        {"chapter": 10, "density": 0.9}
+      ],
+      "conflictIntensity": [
+        {"chapter": 1, "intensity": 0.9},
+        {"chapter": 5, "intensity": 0.4}
+      ]
+    },
+    
+    "addictionIndex": {
+      "score": 8.7,
+      "level": "极易上头",
+      "factors": {
+        "suspenseHooks": {
+          "score": 9,
+          "weight": 0.25,
+          "count": 15,
+          "examples": ["第5章：神秘男人的真实身份？"]
+        },
+        "emotionalInvestment": {
+          "score": 8.5,
+          "weight": 0.20,
+          "reason": "读者会对女主产生强烈共鸣"
+        },
+        "paceControl": {
+          "score": 8,
+          "weight": 0.15,
+          "reason": "节奏张弛有度"
+        },
+        "rewardFrequency": {
+          "score": 9,
+          "weight": 0.20,
+          "reason": "每3-5章就有一个爽点"
+        },
+        "cliffhangers": {
+          "score": 8.5,
+          "weight": 0.20,
+          "count": 12,
+          "examples": ["第10章结尾：门外传来敲门声..."]
+        }
+      },
+      "prediction": {
+        "bingeProbability": 0.85,
+        "averageReadingTime": "3-5小时",
+        "dropRate": 0.12,
+        "rereadRate": 0.35
+      },
+      "warnings": ["第3章节奏稍慢，可能导致部分读者流失"]
+    },
+    
+    "characters": {
+      "protagonist": {
+        "name": "主角姓名",
+        "age": 28,
+        "occupation": "职业",
+        "personality": ["性格特点1", "性格特点2"],
+        "arc": "从被动受害者到主动掌控者",
+        "likability": 9.0,
+        "relatability": 9.2
+      },
+      "supporting": [
+        {
+          "name": "配角姓名",
+          "role": "角色定位",
+          "relationship": "与主角的关系"
+        }
+      ],
+      "relationships": [
+        {
+          "from": "角色A",
+          "to": "角色B",
+          "type": "关系类型（如：恋人、敌人、朋友）",
+          "description": "关系描述"
+        }
+      ]
+    },
+    
+    "plot": {
+      "structure": "三幕式结构",
+      "act1": {
+        "chapters": "1-10",
+        "summary": "背叛与觉醒",
+        "keyEvents": ["事件1", "事件2"]
+      },
+      "act2": {
+        "chapters": "11-30",
+        "summary": "成长与逆袭",
+        "keyEvents": ["事件1", "事件2"]
+      },
+      "act3": {
+        "chapters": "31-50",
+        "summary": "高潮与圆满",
+        "keyEvents": ["事件1", "事件2"]
+      },
+      "mainConflicts": [
+        "主要冲突1",
+        "主要冲突2"
+      ],
+      "climax": "高潮章节和内容"
+    },
+    
+    "goldenQuotes": [
+      "女人最大的底气，是自己挣的钱",
+      "爱情可以输，但人生不能输"
+    ],
+    
+    "highlights": [
+      {
+        "chapter": 1,
+        "scene": "发现男友出轨",
+        "type": "冲突",
+        "emotion": "愤怒",
+        "suitableFor": ["短视频", "图文"]
+      },
+      {
+        "chapter": 18,
+        "scene": "打脸前男友",
+        "type": "爽点",
+        "emotion": "解气",
+        "suitableFor": ["短视频", "漫画"]
+      }
+    ]
+  },
+  
+  "audienceProfile": {
+    "primary": {
+      "age": "25-35岁",
+      "gender": "女性为主",
+      "occupation": ["白领", "职场人"],
+      "education": "本科及以上",
+      "income": "月收入8k-2万",
+      "location": ["美国", "台湾", "新加坡", "日本"]
+    },
+    "psychographics": {
+      "interests": ["职场成长", "女性独立", "情感治愈"],
+      "painPoints": ["职场压力", "情感困惑", "经济焦虑"],
+      "desires": ["经济独立", "自我价值", "情感满足"],
+      "emotionalState": ["失恋中", "职场受挫", "寻求改变"]
+    },
+    "suitableFor": [
+      "职场新人",
+      "失恋者",
+      "全职妈妈想重返职场",
+      "追求经济独立的女性"
+    ],
+    "notSuitableFor": [
+      "男性读者（共鸣度低）",
+      "学生群体（职场内容难以理解）",
+      "退休人群（年龄差距大）"
+    ]
+  },
+  
+  "regionalStrategy": {
+    "coreMarkets": [
+      {
+        "country": "美国",
+        "budget": "25%",
+        "matchScore": 0.85,
+        "language": "英文",
+        "platforms": ["TikTok", "Facebook", "Instagram", "Google Ads"],
+        "strategy": "英文翻译版 + 华人社区推广"
+      },
+      {
+        "country": "台湾",
+        "budget": "20%",
+        "matchScore": 0.92,
+        "language": "繁体中文",
+        "platforms": ["Facebook", "Instagram", "TikTok", "Dcard"],
+        "strategy": "繁体中文本地化，台湾用语调整"
+      }
+    ]
+  },
+  
+  "creativeDirections": [
+    {
+      "directionId": "D001",
+      "name": "职场逆袭角度",
+      "targetAudience": "职场新人、白领",
+      "targetRegion": ["美国", "台湾", "新加坡"],
+      "emotionalTrigger": "共鸣 + 励志",
+      "coreMessage": "3个月从底层到高管的秘密",
+      "keyChapters": [3, 8, 12, 30],
+      "keyScenes": [
+        "第3章：被同事欺负",
+        "第8章：首次反击成功",
+        "第30章：升职高管"
+      ],
+      "quotes": [
+        "你看不起我，我就让你高攀不起",
+        "职场没有眼泪，只有实力"
+      ],
+      "platforms": ["TikTok", "Facebook", "Google Ads"],
+      "estimatedROI": "1:5",
+      "priority": "高"
+    }
+  ]
+}
+\`\`\`
+
+请确保：
+1. 所有数据都是基于实际内容分析得出
+2. 情感曲线、节奏等数据要覆盖所有章节
+3. 人物关系要完整准确
+4. 创意方向要具体可执行
+5. 输出严格的 JSON 格式，不要有多余的文字
+
+开始分析：`;
+}
