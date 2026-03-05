@@ -737,7 +737,7 @@
   - 情感：从委屈到爽快
 - **内容聚焦**：第3、5、8、12、30章
 - **金句**："你看不起我，我就让你高攀不起"
-- **平台**：抖音、小红书、LinkedIn
+- **平台**：TikTok、Facebook、Google Ads
 - **预估ROI**：1:5
 - **优先级**：高
 
@@ -753,7 +753,7 @@
   - 情感：从痛苦到治愈
 - **内容聚焦**：第1、15、25、40章
 - **金句**："爱情可以输，但人生不能输"
-- **平台**：抖音、快手、小红书
+- **平台**：TikTok、Facebook、Instagram
 - **预估ROI**：1:4
 - **优先级**：高
 
@@ -762,7 +762,7 @@
 - **目标地区**：三四线城市、快手用户
 - **情感触发**：爽感 + 解气
 - **核心信息**：前男友跪求复合，她的回应绝了！
-- **平台**：快手、番茄小说
+- **平台**：TikTok、Facebook
 - **预估ROI**：1:3
 
 **方向4：女性独立角度**
@@ -770,7 +770,7 @@
 - **目标地区**：一二线城市、台湾、新加坡
 - **情感触发**：认同 + 力量
 - **核心信息**：女人最大的底气，是自己挣的钱
-- **平台**：小红书、微博、知乎
+- **平台**：Facebook、Instagram、Google Ads
 - **预估ROI**：1:6
 - **优先级**：极高
 
@@ -787,10 +787,10 @@
 
 #### 1. 短视频素材
 
-**抖音短视频（15秒）**
+**TikTok短视频（15秒）**
 ```json
 {
-  "platform": "抖音",
+  "platform": "TikTok",
   "duration": 15,
   "format": "竖屏 9:16",
   
@@ -843,8 +843,8 @@
     "duration": 15
   },
   
-  "hashtags": ["#职场逆袭", "#女性独立", "#励志"],
-  "caption": "3个月从底层到高管，她做对了什么？💪",
+  "hashtags": ["#WorkplaceSuccess", "#WomenEmpowerment", "#Motivation"],
+  "caption": "From bottom to top in 3 months. How did she do it? 💪",
   
   "estimatedViews": "50-100万",
   "estimatedCTR": "8%",
@@ -852,63 +852,88 @@
 }
 ```
 
-**小红书短视频（30秒）**
-- 更注重干货输出
-- 知性女声配音
-- 分屏展示对比
-- 详细讲解步骤
+**Facebook视频广告（30秒）**
+- 横屏格式（16:9）或方形（1:1）
+- 前3秒必须抓眼球（自动播放无声）
+- 字幕必须清晰（很多人静音观看）
+- CTA按钮："Learn More" / "Shop Now"
+- 目标受众：25-35岁女性，兴趣标签（职场、女性独立、励志）
+
+**Google Ads视频广告（6秒/15秒）**
+- 6秒不可跳过广告：极简信息，强冲击
+- 15秒可跳过广告：前5秒抓住注意力
+- 展示位置：YouTube视频前、搜索结果
+- 关键词定向：职场小说、女性成长、励志书籍
 
 #### 2. 图文素材
 
-**小红书9宫格**
-1. 封面：书籍封面 + 标题
-2. 金句：女人最大的底气，是自己挣的钱
-3. 人物卡片：女主林晓雪的人设介绍
-4. 情节高光：第8章漫画分镜
-5. 金句：你看不起我，我就让你高攀不起
-6. 干货总结：职场逆袭的5个步骤
-7. 读者评价：真实好评截图
-8. 购买引导：限时优惠信息
-9. CTA：扫码购买 + 二维码
+**Facebook图文广告**
+- **格式**：单图或轮播图（Carousel）
+- **尺寸**：1200x628px（横图）或 1080x1080px（方图）
+- **文案**：简短有力（前125字符最重要）
+- **CTA按钮**：Learn More / Shop Now / Download
+- **内容**：
+  1. 封面图：书籍封面 + 吸睛标题
+  2. 金句海报：视觉冲击力强的金句
+  3. 人物卡片：女主角色介绍
+  4. 情节高光：关键场景截图
+  5. 用户评价：5星好评截图
 
-**文案**：
-```
-姐妹们！这本书我熬夜看完了！
+**Instagram图文（方图 1:1）**
+- **风格**：精致、美观、有设计感
+- **文案**：故事性强，引发共鸣
+- **Hashtags**：#BookRecommendation #WomenEmpowerment #MustRead
+- **Stories**：15秒短视频片段，滑动查看更多
 
-太爽了！女主从被欺负到成为高管，只用了3个月！
-
-里面的职场干货真的很实用，我已经开始实践了 💪
-
-强烈推荐给所有职场人！
-
-#职场逆袭 #女性成长 #好书推荐
-```
+**Google Display Ads（展示广告）**
+- **尺寸**：多种尺寸适配（300x250, 728x90, 160x600等）
+- **设计**：简洁明了，突出书名和核心卖点
+- **文案**：短标题 + 简短描述 + CTA
+- **投放位置**：新闻网站、博客、内容网站
+- **再营销**：追踪访问过网站但未购买的用户
 
 #### 3. 文案素材
 
-**微信朋友圈（50字）**
+**Facebook广告文案（短文案）**
 ```
-3个月，从被欺负的职场小白到高管。
-她做对了什么？这本书给了我答案。
-```
-
-**微博（140字）**
-```
-【职场逆袭】看完这本书，我才明白：
-职场没有捷径，但有方法。女主从底层到高管
-只用了3个月，她的5个秘诀值得每个职场人学习。
-最喜欢这句话：女人最大的底气，是自己挣的钱。💪
-#职场逆袭 #女性独立
+From betrayed to boss in 3 months. 
+Her secret? Economic independence.
+"A woman's greatest confidence is the money she earns herself."
+👉 Read her story now
 ```
 
-**知乎（500字长文）**
+**Google搜索广告文案**
 ```
-【深度】为什么我推荐每个职场新人都看这本书？
+标题1：Women's Empowerment Novel | Workplace Success Story
+标题2：From Bottom to Top in 3 Months
+标题3：Inspiring Story for Career Women
+描述1：A powerful story of a woman's journey to independence and success.
+描述2：Perfect for anyone seeking motivation and career guidance. Read now!
+```
 
-作为一个在职场摸爬滚打5年的人，我看过很多职场小说，
-但这本书给我的震撼最大...
+**Instagram文案（故事性）**
+```
+She was betrayed, bullied, and broken.
+But she didn't give up.
 
-（详细分析书中的职场干货和实用技巧）
+3 months later, she became her bully's boss.
+
+This book changed how I see career and relationships.
+If you're going through a tough time, read this. 💪
+
+Link in bio 👆
+
+#BookRecommendation #WomenEmpowerment #CareerSuccess
+```
+
+**TikTok视频文案**
+```
+POV: You became your bully's boss 3 months later 😎
+
+How did she do it? 👇
+Comment "BOOK" for the link
+
+#WorkplaceSuccess #Motivation #WomenEmpowerment
 ```
 
 #### 4. 音频素材
@@ -929,19 +954,22 @@
 
 #### 5. 互动素材
 
-**测试题**
-- 标题：测测你是书中的哪个角色？
-- 题目：5道选择题
-- 结果：3种角色类型
-- 分享文案：我是【林晓雪】！你呢？
-- 平台：小红书、微博
-- 预估分享：5000+
+**Facebook互动广告**
+- **投票**：Should she forgive her ex? Yes / No
+- **测试题**：Which character are you? Take the quiz!
+- **评论互动**：Comment "STRONG" if you believe in women's independence
+- **分享活动**：Share this post and tag 3 friends who need to read this
 
-**投票**
-- 标题：你觉得女主应该原谅前男友吗？
-- 选项：原谅 / 不原谅
-- 平台：抖音、微博
-- 预估投票：10000+
+**Instagram Stories互动**
+- **投票贴纸**：Career or Love? Which is more important?
+- **问答贴纸**：Ask me anything about the book
+- **倒计时**：Limited time offer - 50% off!
+- **滑动链接**：Swipe up to read now
+
+**Google Ads再营销**
+- **动态再营销**：展示用户浏览过的书籍
+- **放弃购物车提醒**：You left something in your cart...
+- **限时优惠**：24-hour flash sale - Don't miss out!
 
 ---
 
@@ -1037,12 +1065,35 @@
 - 配音风格（温柔 vs 磁性）
 - BGM类型（钢琴 vs 流行）
 - 投放时间（早中晚）
-- 投放平台（抖音 vs 小红书）
+- 投放平台（TikTok vs Facebook vs Google）
+- 广告格式（视频 vs 图文 vs 轮播）
+- CTA按钮（Learn More vs Shop Now vs Download）
+- 目标受众（年龄、兴趣、行为）
 
 **优化策略**：
 - 保留高ROI素材
 - 淘汰低效素材
 - 持续迭代优化
+
+#### 平台特定策略
+
+**TikTok**：
+- 重点：娱乐性、病毒式传播
+- 格式：15-60秒短视频
+- 策略：UGC风格、真实感、趋势音乐
+- 目标：年轻用户（18-35岁）
+
+**Facebook**：
+- 重点：精准定向、再营销
+- 格式：视频、图文、轮播、Stories
+- 策略：详细受众定向、Lookalike Audience
+- 目标：25-45岁女性
+
+**Google Ads**：
+- 重点：搜索意图、展示网络
+- 格式：搜索广告、展示广告、YouTube视频
+- 策略：关键词竞价、再营销、内容定向
+- 目标：主动搜索用户
 
 ---
 
