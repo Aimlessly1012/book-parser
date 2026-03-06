@@ -1,8 +1,0 @@
-{
-  "step": "analyze",
-  "promptFile": "navy-full-test/analysis-prompt.txt",
-  "outputDir": "navy-full-test",
-  "compareMode": true,
-  "reverseEngineer": true,
-  "timestamp": 1772764820298
-}
