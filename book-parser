@@ -13,14 +13,16 @@ if (!command || !bookFile) {
   console.log('Usage: ./book-parser analyze <book.txt> [options]');
   console.log('');
   console.log('Options:');
-  console.log('  --output <dir>    输出目录 (默认: ./output)');
-  console.log('  --chapters <n>    解析章节数量 (默认: 全部)');
-  console.log('  --auto            自动生成完整分析报告');
-  console.log('  --compare         自动对比相似书籍并生成最终卖点');
+  console.log('  --output <dir>         输出目录 (默认: ./output)');
+  console.log('  --chapters <n>         解析章节数量 (默认: 全部)');
+  console.log('  --auto                 自动生成完整分析报告');
+  console.log('  --compare              自动对比相似书籍并生成最终卖点');
+  console.log('  --reverse-engineer     使用反向工程生成精确人群画像');
   console.log('');
   console.log('Examples:');
   console.log('  ./book-parser analyze book.txt --output output');
   console.log('  ./book-parser analyze book.txt --auto --compare');
+  console.log('  ./book-parser analyze book.txt --auto --compare --reverse-engineer');
   process.exit(1);
 }
 
@@ -29,6 +31,7 @@ let outputDir = './output';
 let maxChapters = null;
 let autoAnalyze = false;
 let compareMode = false;
+let reverseEngineer = false;
 
 for (let i = 2; i < args.length; i++) {
   if (args[i] === '--output' && args[i + 1]) {
@@ -42,6 +45,8 @@ for (let i = 2; i < args.length; i++) {
   } else if (args[i] === '--compare') {
     compareMode = true;
     autoAnalyze = true; // compare 模式自动启用 auto
+  } else if (args[i] === '--reverse-engineer') {
+    reverseEngineer = true;
   }
 }
 
@@ -131,6 +136,7 @@ if (autoAnalyze) {
     promptFile: promptFile,
     outputDir: outputDir,
     compareMode: compareMode,
+    reverseEngineer: reverseEngineer,
     timestamp: Date.now()
   }, null, 2));
   
@@ -143,6 +149,9 @@ if (autoAnalyze) {
   if (compareMode) {
     console.log('  ✅ Step 4: 对比分析生成卖点');
     console.log('  ✅ Step 5: 查询广告数据');
+  }
+  if (reverseEngineer) {
+    console.log('  ✅ Step 6: 反向工程生成精确人群画像');
   }
   
 } else {

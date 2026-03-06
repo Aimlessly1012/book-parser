@@ -20,12 +20,12 @@ if (!taskFile || !fs.existsSync(taskFile)) {
 }
 
 const task = JSON.parse(fs.readFileSync(taskFile, 'utf-8'));
-const { promptFile, outputDir, compareMode } = task;
+const { promptFile, outputDir, compareMode, reverseEngineer } = task;
 
 console.log('🤖 开始自动化工作流...\n');
 
 // Step 2: 生成书籍分析（由 AI 完成）
-console.log('📝 Step 2/5: 等待 AI 生成书籍分析...');
+console.log('📝 Step 2/6: 等待 AI 生成书籍分析...');
 console.log('   文件: book-analysis.json');
 console.log('   状态: 等待 AI 完成\n');
 
@@ -137,6 +137,56 @@ if (compareMode) {
   }
 }
 
+// Step 6: 反向工程生成精确人群画像
+if (reverseEngineer) {
+  console.log('🔍 Step 6/6: 反向工程生成精确人群画像...');
+  
+  try {
+    const scriptDir = path.dirname(process.argv[1]);
+    const reverseEngineerScript = path.join(scriptDir, 'reverse-engineer');
+    
+    // 从相似书籍中提取书名
+    const similarBooksFile = path.join(outputDir, 'similar-books.json');
+    if (fs.existsSync(similarBooksFile)) {
+      const similarBooks = JSON.parse(fs.readFileSync(similarBooksFile, 'utf-8'));
+      const topBooks = similarBooks.books.slice(0, 3); // 取前3本
+      
+      console.log(`   分析 ${topBooks.length} 本竞品...\n`);
+      
+      // 为每本书生成示例数据
+      topBooks.forEach(book => {
+        execSync(`${reverseEngineerScript} analyze-ads "${book.title}"`, {
+          cwd: outputDir,
+          stdio: 'inherit'
+        });
+      });
+      
+      // 生成综合人群画像
+      console.log('\n   生成综合人群画像...\n');
+      execSync(`${reverseEngineerScript} generate-profile`, {
+        cwd: outputDir,
+        stdio: 'inherit'
+      });
+      
+      // 将生成的画像移动到输出目录
+      const competitorDir = path.join(outputDir, 'competitor-analysis');
+      if (fs.existsSync(competitorDir)) {
+        const profileFile = path.join(competitorDir, 'audience-profile-synthesized.json');
+        if (fs.existsSync(profileFile)) {
+          const targetFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
+          fs.copyFileSync(profileFile, targetFile);
+          console.log(`✅ 精确人群画像已保存: audience-profile-reverse-engineered.json\n`);
+        }
+      }
+    } else {
+      console.error('⚠️  未找到相似书籍数据，跳过反向工程\n');
+    }
+  } catch (error) {
+    console.error('⚠️  反向工程失败:', error.message);
+    console.error('   继续执行...\n');
+  }
+}
+
 console.log('✅ 自动化工作流完成！\n');
 console.log('📁 输出文件:');
 console.log(`   ${outputDir}/`);
@@ -146,4 +196,8 @@ console.log('   ├── similar-books.json     # 相似书籍');
 if (compareMode) {
   console.log('   ├── selling-points-compare.json  # 对比分析（待完成）');
   console.log('   └── ads-data.json          # 广告数据');
+}
+if (reverseEngineer) {
+  console.log('   ├── audience-profile-reverse-engineered.json  # 精确人群画像');
+  console.log('   └── competitor-analysis/   # 竞品分析数据');
 }
