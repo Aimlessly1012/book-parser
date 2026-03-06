@@ -1,5 +1,6 @@
 {
-  "provider": "gemini",
-  "apiKey": "YOUR_API_KEY_HERE",
-  "model": "gemini-1.5-flash"
+  "provider": "claude",
+  "apiKey": "ak-e2331aa4f34041cba8256cc9051ac70d",
+  "model": "claude-sonnet-4-5-20250929",
+  "baseUrl": "https://api.routin.ai/v1/messages"
 }

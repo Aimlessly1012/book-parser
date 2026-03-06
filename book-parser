@@ -188,7 +188,9 @@ async function runFullAutomation() {
   try {
     const aiService = new AIService({
       apiKey: apiKey,
-      provider: apiProvider
+      provider: apiProvider,
+      model: config.model,
+      baseUrl: config.baseUrl
     });
 
     console.log('🤖 Step 2/6: 正在通过 AI 生成书籍分析报告...');
