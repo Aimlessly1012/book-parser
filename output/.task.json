@@ -1,0 +1,13 @@
+{
+  "step": "analyze",
+  "bookTitle": "Falling for my boyfriend's Navy b.txt",
+  "promptFile": "output/analysis-prompt.txt",
+  "outputDir": "./output",
+  "compareMode": true,
+  "reverseEngineer": true,
+  "apiKey": "ak-e2331aa4f34041cba8256cc9051ac70d",
+  "apiProvider": "claude",
+  "model": "claude-sonnet-4-5-20250929",
+  "baseUrl": "https://api.routin.ai/v1/messages",
+  "timestamp": 1772791973181
+}

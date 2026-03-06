@@ -21,7 +21,7 @@ if (!taskFile || !fs.existsSync(taskFile)) {
 }
 
 const task = JSON.parse(fs.readFileSync(taskFile, 'utf-8'));
-const { promptFile, outputDir, compareMode, reverseEngineer, apiKey, apiProvider } = task;
+const { bookTitle, promptFile, outputDir, compareMode, reverseEngineer, apiKey, apiProvider, model, baseUrl } = task;
 
 console.log('🤖 开始自动化工作流...\n');
 
@@ -48,32 +48,42 @@ console.log('🔍 Step 3/5: 查找相似书籍...');
 const keywords = analysis.bookAnalysis.basicInfo.searchKeywords || analysis.bookAnalysis.basicInfo.keywords;
 const keywordsStr = keywords.slice(0, 3).map(k => `"${k}"`).join(' ');
 
-try {
-  const scriptDir = path.dirname(process.argv[1]);
-  const findSimilarScript = path.join(scriptDir, 'find-similar-books');
-  
-  execSync(`${findSimilarScript} ${keywordsStr} --save`, {
-    cwd: outputDir,
-    stdio: 'inherit'
-  });
-  
-  // 找到最新的 similar-books 文件
-  const files = fs.readdirSync(outputDir);
-  const similarBooksFile = files
-    .filter(f => f.startsWith('similar-books-') && f.endsWith('.json'))
-    .sort()
-    .reverse()[0];
-  
-  if (similarBooksFile) {
-    // 重命名为标准名称
-    const oldPath = path.join(outputDir, similarBooksFile);
-    const newPath = path.join(outputDir, 'similar-books.json');
-    fs.renameSync(oldPath, newPath);
-    console.log(`✅ 相似书籍已保存: similar-books.json\n`);
+// Step 3: 查找相似书籍
+const finalSimilarBooksPath = path.join(outputDir, 'similar-books.json');
+if (fs.existsSync(finalSimilarBooksPath)) {
+  console.log('✅ 已存在相似书籍数据，跳过搜索。\n');
+} else {
+  console.log('🔍 Step 3/5: 查找相似书籍...');
+  try {
+    const scriptDir = path.dirname(process.argv[1]);
+    const findSimilarScript = path.join(scriptDir, 'find-similar-books');
+    
+    // 使用传入的 bookTitle，如果没有则回退到关键词中的第一个
+    const searchTitle = bookTitle || (keywords[0] ? keywords[0] : 'Fiction');
+    
+    execSync(`${findSimilarScript} "${searchTitle}" ${keywordsStr} --save`, {
+      cwd: outputDir,
+      stdio: 'inherit'
+    });
+    
+    // 找到最新的 similar-books 文件
+    const files = fs.readdirSync(outputDir);
+    const similarBooksFile = files
+      .filter(f => f.startsWith('similar-books-') && f.endsWith('.json'))
+      .sort()
+      .reverse()[0];
+    
+    if (similarBooksFile) {
+      // 重命名为标准名称
+      const oldPath = path.join(outputDir, similarBooksFile);
+      fs.renameSync(oldPath, finalSimilarBooksPath);
+      console.log(`✅ 相似书籍已保存: similar-books.json\n`);
+    }
+  } catch (error) {
+    console.error('❌ 查找相似书籍失败:', error.message);
+    // 如果是可选步骤，可以不 exit
+    process.exit(1);
   }
-} catch (error) {
-  console.error('❌ 查找相似书籍失败:', error.message);
-  process.exit(1);
 }
 
 async function runWorkflow() {
@@ -111,6 +121,18 @@ async function runWorkflow() {
     await runStep6();
   }
 
+  // Step 7: 生成综合营销报告
+  console.log('📝 Step 7/7: 生成最终营销报告 (MARKETING-REPORT.md)...');
+  try {
+    const scriptDir = path.dirname(process.argv[1]);
+    const reportGeneratorScript = path.join(scriptDir, 'report-generator');
+    execSync(`${reportGeneratorScript} "${outputDir}"`, {
+      stdio: 'inherit'
+    });
+  } catch (error) {
+    console.error('⚠️  生成营销报告失败:', error.message);
+  }
+
   console.log('✅ 自动化工作流完成！\n');
   console.log('📁 输出文件:');
   console.log(`   ${outputDir}/`);
@@ -140,7 +162,7 @@ async function runAutonomousComparison() {
   const similarBooks = JSON.parse(fs.readFileSync(similarBooksFile, 'utf-8'));
   const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
 
-  const comparePrompt = `你是一位顶尖的网文出海营销专家。请对比我们的书和以下竞品，生成最终的卖点分析。
+  const comparePrompt = `你是一位顶尖的网文出海营销专家。请对比我们的书和以下竞品，生成最终的卖点分析，特别侧重于广告素材的直接应用。
 
 # 我们的书
 ${JSON.stringify(ourBook, null, 2)}
@@ -155,14 +177,40 @@ ${JSON.stringify(similarBooks, null, 2)}
     { "dimension": "维度名称", "ourBook": "我们的表现", "similarBooks": { "书名": "表现" }, "advantage": "优势说明" }
   ],
   "finalSellingPoints": [
-    { "pointId": "SP001", "title": "卖点标题", "oneLinePitch": "一句话文案", "marketValidation": "市场验证", "differentiator": "差异化优势", "estimatedROI": "1:X", "priority": "极高" }
+    {
+      "pointId": "SP001",
+      "title": "卖点标题",
+      "oneLinePitch": "一句话核心文案（用于广告 Hook）",
+      "marketValidation": "市场验证说明",
+      "differentiator": "为什么我们比竞品更爽/更虐？",
+      "estimatedROI": "1:X",
+      "priority": "极高",
+      "adCopy": {
+        "facebook": { "hook": "吸睛标题", "body": "正文内容（带情绪引导）" },
+        "tiktok": { "videoHook": "前3秒视觉/文案钩子", "caption": "短视频配文" }
+      },
+      "visualDirections": "针对此卖点的短视频/海报画面描述（给设计师的 Brief）",
+      "psychologicalTriggers": "触发读者的心理动机（如：代入感、优越感、情感宣泄）",
+      "targetingKeywords": ["投放兴趣关键词1", "投放兴趣关键词2"],
+      "scoring": {
+        "marketAppeal": "1-10分，基于竞品热度评估潜力",
+        "uniqueness": "1-10分，对比竞品的差异化程度",
+        "emotionalImpact": "1-10分，对读者情绪的带动能力",
+        "overallScore": "1-10分，综合推荐指数"
+      }
+    }
   ],
   "competitiveAdvantage": { "summary": "综合评价", "uniqueValue": ["独特价值1", "独特价值2"] }
 }`;
 
-  console.log('🤖 正在自主生成对比分析...');
+  console.log('🤖 正在自主生成富媒体化对比分析...');
   try {
-    const aiService = new AIService({ apiKey, provider: apiProvider });
+    const aiService = new AIService({ 
+      apiKey, 
+      provider: apiProvider,
+      model: model,
+      baseUrl: baseUrl
+    });
     const result = await aiService.chat(comparePrompt);
     
     let jsonContent = result;

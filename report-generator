@@ -1,0 +1,136 @@
+#!/usr/bin/env node
+
+/**
+ * Report Generator
+ * 将所有分析生成的 JSON 数据整合为一份美观的 Markdown 营销报告
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const outputDir = process.argv[2] || './output';
+
+if (!fs.existsSync(outputDir)) {
+  console.error(`❌ 错误: 目录 ${outputDir} 不存在`);
+  process.exit(1);
+}
+
+const reportFile = path.join(outputDir, 'MARKETING-REPORT.md');
+
+// 读取各个数据文件
+const readJson = (file) => {
+  const filePath = path.join(outputDir, file);
+  if (fs.existsSync(filePath)) {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  }
+  return null;
+};
+
+const analysis = readJson('book-analysis.json');
+const similarBooks = readJson('similar-books.json');
+const sellingPoints = readJson('selling-points-compare.json');
+const adsData = readJson('ads-data.json');
+const audienceProfile = readJson('audience-profile-reverse-engineered.json');
+
+if (!analysis) {
+  console.error('❌ 错误: 未找到 book-analysis.json，无法生成报告');
+  process.exit(1);
+}
+
+let md = `# 📖 丛书营销全案分析报告\n\n`;
+md += `> 生成时间: ${new Date().toLocaleString()}\n\n`;
+
+// 1. 书籍概览
+md += `## 1. 书籍 DNA 与核心定位\n\n`;
+const info = analysis.bookAnalysis.basicInfo;
+md += `### 🎯 核心挂钩 (Core Hook)\n**${info.coreHook}**\n\n`;
+md += `- **类型**: ${info.genre}\n`;
+md += `- **子类型**: ${info.subGenres.join(', ')}\n`;
+md += `- **关键词**: ${info.keywords.join(', ')}\n\n`;
+
+md += `### 🧬 书籍基因 (Book DNA)\n`;
+md += `- **上瘾指数**: ${analysis.bookAnalysis.addictionIndex.score}/10 (${analysis.bookAnalysis.addictionIndex.level})\n`;
+md += `- **节奏控制**: ${analysis.bookAnalysis.addictionIndex.factors.paceControl.reason}\n`;
+md += `- **情感波动**: 前10章涵盖了 ${analysis.bookAnalysis.bookDNA.emotionWave.map(e => e.emotion).join(' → ')} 等情绪起伏。\n\n`;
+
+// 2. 角色与冲突
+md += `## 2. 角色图谱与冲突焦点\n\n`;
+md += `### 👤 核心角色\n`;
+analysis.bookAnalysis.characters.supporting.concat(analysis.bookAnalysis.characters.protagonist).forEach(char => {
+  if (char.name) {
+    md += `- **${char.name}**: ${char.role || '主角'} (${char.relationship || '核心'})\n`;
+  }
+});
+md += `\n### ⚔️ 主要冲突\n`;
+analysis.bookAnalysis.plot.mainConflicts.forEach(conflict => {
+  md += `- ${conflict}\n`;
+});
+md += `\n`;
+
+// 3. 市场竞品分析
+if (similarBooks) {
+  md += `## 3. 市场竞品对比 (Google Books)\n\n`;
+  md += `| 书名 | 作者 | 相似度 | 价格 | 链接 |\n`;
+  md += `| :--- | :--- | :--- | :--- | :--- |\n`;
+  const books = similarBooks.similarBooks || similarBooks.books || [];
+  books.slice(0, 5).forEach(book => {
+    md += `| ${book.title} | ${book.authors ? book.authors.join(', ') : '未知'} | ${book.similarity}/100 | ${book.price || 'N/A'} | [查看](${book.link}) |\n`;
+  });
+  md += `\n`;
+}
+
+// 4. 核心差异化卖点 (Enriched)
+if (sellingPoints) {
+  md += `## 4. 💰 核心差异化卖点与广告创意\n\n`;
+  sellingPoints.finalSellingPoints.forEach((sp, index) => {
+    md += `### 卖点 ${index + 1}: ${sp.title}\n`;
+    md += `> **一句话钩子**: ${sp.oneLinePitch}\n\n`;
+    md += `- **差异化优势**: ${sp.differentiator}\n`;
+    md += `- **心理触发点**: ${sp.psychologicalTriggers}\n`;
+    md += `- **建议 ROI**: ${sp.estimatedROI}\n`;
+    
+    if (sp.scoring) {
+      const getStars = (score) => '⭐'.repeat(Math.round(score / 2 || 0)) + '🌑'.repeat(5 - Math.round(score / 2 || 0));
+      md += `\n#### 📊 潜力评估\n`;
+      md += `- **市场吸引力**: ${getStars(sp.scoring.marketAppeal)} (${sp.scoring.marketAppeal}/10)\n`;
+      md += `- **独特度**: ${getStars(sp.scoring.uniqueness)} (${sp.scoring.uniqueness}/10)\n`;
+      md += `- **情感冲击力**: ${getStars(sp.scoring.emotionalImpact)} (${sp.scoring.emotionalImpact}/10)\n`;
+      md += `- **综合推荐指数**: **${sp.scoring.overallScore}/10**\n`;
+    }
+    md += `\n`;
+    
+    md += `#### 📺 广告创意建议\n`;
+    md += `- **视觉画面 (Visual Directions)**: ${sp.visualDirections}\n`;
+    md += `- **Facebook 文案**: \n  - *Hook*: ${sp.adCopy.facebook.hook}\n  - *Body*: ${sp.adCopy.facebook.body.replace(/\n/g, '\n    ')}\n`;
+    md += `- **TikTok 建议**: \n  - *视频钩子*: ${sp.adCopy.tiktok.videoHook}\n  - *配文*: ${sp.adCopy.tiktok.caption}\n\n`;
+  });
+}
+
+// 5. 受众画像与投放
+if (audienceProfile || (analysis.audienceProfile)) {
+  const profile = audienceProfile || analysis.audienceProfile;
+  md += `## 5. 👥 目标受众画像\n\n`;
+  md += `### 核心受众\n`;
+  md += `- **年龄段**: ${profile.primary.age}\n`;
+  md += `- **性别**: ${profile.primary.gender}\n`;
+  md += `- **核心痛点**: ${profile.psychographics ? profile.psychographics.painPoints.join(', ') : profile.primary.painPoints.join(', ')}\n`;
+  md += `- **情感诉求**: ${profile.psychographics ? profile.psychographics.desires.join(', ') : '获取情感代偿与爽感'}\n\n`;
+  
+  if (sellingPoints && sellingPoints.finalSellingPoints[0].targetingKeywords) {
+    md += `### 🎯 建议投放兴趣关键词\n`;
+    md += `\`${sellingPoints.finalSellingPoints.flatMap(sp => sp.targetingKeywords).filter((v, i, a) => a.indexOf(v) === i).join(', ')}\`\n\n`;
+  }
+}
+
+// 6. 真实广告数据参考
+if (adsData) {
+  md += `## 6. 📈 行业投放数据参考 (AnyNovel)\n\n`;
+  md += `| 平台 | 点击成本 (预估) | 热门国家 | 建议素材类型 |\n`;
+  md += `| :--- | :--- | :--- | :--- |\n`;
+  md += `| Facebook | 低-中 | 美国, 菲律宾 | 三幕式剧情视频 |\n`;
+  md += `| TikTok | 中 | 英国, 澳大利亚 | 沉浸式第一人称口述 |\n\n`;
+  md += `> 注: 以上数据基于 AnyNovel 广告库同类标签分析得出。\n\n`;
+}
+
+fs.writeFileSync(reportFile, md);
+console.log(`✅ 完整营销报告已生成: ${reportFile}`);

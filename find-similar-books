@@ -281,12 +281,22 @@ async function main() {
     console.log(`🔍 搜索目标书籍: ${bookTitle}`);
     const targetResults = await searchBooks(bookTitle, 1);
     
+    let targetBook;
     if (targetResults.length === 0) {
-      console.error('❌ 找不到目标书籍');
-      process.exit(1);
+      console.warn('⚠️  找不到目标书籍元数据，将使用关键词进行搜索。');
+      targetBook = {
+        id: 'target-placeholder',
+        title: bookTitle,
+        authors: ['Unknown'],
+        categories: keywords.length > 0 ? [keywords[0]] : ['Fiction'],
+        averageRating: 0,
+        ratingsCount: 0,
+        maturityRating: 'NOT_MATURE',
+        pageCount: 300
+      };
+    } else {
+      targetBook = targetResults[0];
     }
-    
-    const targetBook = targetResults[0];
     
     // 查找相似书籍
     const similarBooks = await findSimilarBooks(bookTitle, keywords);

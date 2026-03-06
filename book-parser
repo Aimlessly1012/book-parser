@@ -214,12 +214,15 @@ async function runFullAutomation() {
     const taskFile = path.join(outputDir, '.task.json');
     fs.writeFileSync(taskFile, JSON.stringify({
       step: 'analyze',
+      bookTitle: path.basename(bookFile),
       promptFile: promptFile,
       outputDir: outputDir,
       compareMode: compareMode,
       reverseEngineer: reverseEngineer,
       apiKey: apiKey,
       apiProvider: apiProvider,
+      model: config.model,
+      baseUrl: config.baseUrl,
       timestamp: Date.now()
     }, null, 2));
 
@@ -415,8 +418,10 @@ ${ch.content}
     "preliminarySellingPoints": [
       {
         "title": "卖点标题",
-        "oneLinePitch": "一句话卖点",
-        "webNovelTags": ["标签1", "标签2"]
+        "oneLinePitch": "一句话核心卖点文案",
+        "webNovelTags": ["标签1", "标签2"],
+        "visualHook": "建议的开篇视觉钩子画面描述",
+        "psychologicalTrigger": "背后的心理驱动力（如：复仇快感、渴望被爱、恐惧失去）"
       }
     ]
   },
