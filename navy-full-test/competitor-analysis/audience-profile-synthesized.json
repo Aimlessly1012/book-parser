@@ -1,0 +1,134 @@
+{
+  "generatedAt": "2026-03-06T02:41:53.623Z",
+  "dataSources": 3,
+  "demographics": {
+    "age": {
+      "18-25": 35,
+      "25-35": 45,
+      "35-45": 15,
+      "45+": 5
+    },
+    "gender": {
+      "female": 85,
+      "male": 10,
+      "other": 5
+    },
+    "occupation": {
+      "student": 25,
+      "office_worker": 40,
+      "teacher": 15,
+      "healthcare": 10,
+      "other": 10
+    },
+    "location": {
+      "USA": 40,
+      "UK": 20,
+      "Canada": 15,
+      "Australia": 10,
+      "Other": 15
+    }
+  },
+  "psychographics": {
+    "interests": [
+      {
+        "interest": "军人浪漫",
+        "frequency": 78
+      },
+      {
+        "interest": "禁忌之恋",
+        "frequency": 65
+      },
+      {
+        "interest": "New Adult",
+        "frequency": 58
+      },
+      {
+        "interest": "BookTok",
+        "frequency": 72
+      }
+    ],
+    "painPoints": [
+      {
+        "point": "被伴侣忽视",
+        "frequency": 45
+      },
+      {
+        "point": "toxic relationship",
+        "frequency": 38
+      },
+      {
+        "point": "完美主义压力",
+        "frequency": 22
+      },
+      {
+        "point": "自我价值怀疑",
+        "frequency": 31
+      }
+    ],
+    "desires": [
+      {
+        "desire": "被真正看见",
+        "frequency": 52
+      },
+      {
+        "desire": "遇到好男人",
+        "frequency": 48
+      },
+      {
+        "desire": "情感满足",
+        "frequency": 41
+      },
+      {
+        "desire": "逃离现状",
+        "frequency": 35
+      }
+    ]
+  },
+  "readingHabits": {
+    "platform": {
+      "Kindle": 45,
+      "Wattpad": 30,
+      "Physical": 15,
+      "Other": 10
+    },
+    "frequency": {
+      "daily": 35,
+      "2-3_times_week": 40,
+      "weekly": 20,
+      "monthly": 5
+    },
+    "bingeRead": 78,
+    "readAtNight": 65,
+    "reread": 42
+  },
+  "socialMedia": {
+    "platforms": {
+      "TikTok": 72,
+      "Instagram": 65,
+      "Facebook": 45,
+      "Twitter": 28
+    },
+    "bookCommunities": [
+      "BookTok",
+      "Bookstagram",
+      "Goodreads",
+      "Reddit r/RomanceBooks"
+    ]
+  },
+  "keyInsights": [
+    "核心人群：18-35岁女性，以25-35岁为主（45%）",
+    "主要职业：白领（40%）和学生（25%）",
+    "核心痛点：被伴侣忽视（45%）和toxic relationship（38%）",
+    "阅读习惯：78%会一口气读完，65%喜欢晚上读",
+    "社交媒体：TikTok（72%）和Instagram（65%）是主要平台",
+    "地区分布：美国（40%）、英国（20%）、加拿大（15%）"
+  ],
+  "recommendations": [
+    "重点投放：TikTok 和 Instagram",
+    "核心卖点：渣男 vs 真男人（针对'被忽视'痛点）",
+    "次要卖点：禁忌之恋（针对刺激需求）",
+    "投放地区：美国（40%预算）、英国（20%）、加拿大（15%）",
+    "投放时间：晚上 8-11 点（阅读高峰期）",
+    "素材风格：情感化、直接、有冲击力"
+  ]
+}

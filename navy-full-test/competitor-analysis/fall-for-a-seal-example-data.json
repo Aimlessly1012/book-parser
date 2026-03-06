@@ -1,0 +1,71 @@
+{
+  "bookTitle": "Fall for a SEAL",
+  "dataSource": "Facebook Ad Library + Amazon Reviews (示例数据)",
+  "collectedAt": "2026-03-06T02:41:53.541Z",
+  "adData": {
+    "activeAds": 15,
+    "platforms": [
+      "Facebook",
+      "Instagram",
+      "Messenger"
+    ],
+    "countries": [
+      "United States",
+      "United Kingdom",
+      "Canada",
+      "Australia"
+    ],
+    "adCopy": [
+      "He's a Navy SEAL. She's off-limits. But some rules are meant to be broken.",
+      "When duty calls, love answers.",
+      "A hero's heart. A forbidden love."
+    ],
+    "creativeTypes": [
+      "image",
+      "video"
+    ],
+    "cta": [
+      "Learn More",
+      "Shop Now"
+    ],
+    "startDate": "2025-12-01",
+    "estimatedBudget": "$5,000-10,000/month"
+  },
+  "inferredAudience": {
+    "ageRange": "25-45",
+    "gender": "Female (90%)",
+    "interests": [
+      "Military Romance",
+      "Contemporary Romance",
+      "Action Romance"
+    ],
+    "painPoints": [
+      "Seeking strong protective hero",
+      "Desire for adventure"
+    ],
+    "platforms": [
+      "Facebook",
+      "Instagram",
+      "Amazon"
+    ]
+  },
+  "reviewInsights": {
+    "commonPhrases": [
+      "alpha male",
+      "protective hero",
+      "steamy romance",
+      "couldn't put it down"
+    ],
+    "readerProfiles": [
+      "Military spouse, 28, loves authentic military details",
+      "Teacher, 32, enjoys escapist romance",
+      "Nurse, 26, attracted to protective heroes"
+    ]
+  },
+  "keyInsights": [
+    "军人题材吸引25-45岁女性",
+    "主要卖点：保护欲、Alpha male、制服诱惑",
+    "投放重点：美国（军人文化认同度高）",
+    "素材风格：制服、肌肉、保护姿态"
+  ]
+}

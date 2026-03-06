@@ -1,0 +1,300 @@
+{
+  "bookAnalysis": {
+    "basicInfo": {
+      "genre": "都市言情 / 军人爽文 / 禁忌之恋",
+      "subGenres": ["兄弟禁忌", "渣男打脸", "真爱救赎", "职场女性"],
+      "coreHook": "渣男友忘了接我5次，他当兵的哥哥却记得我的每一个眼神",
+      "keywords": ["海军军人", "禁忌之恋", "渣男打脸", "芭蕾舞者", "兄弟情仇", "被忽视", "暗恋守护"],
+      "searchKeywords": ["military romance", "forbidden love", "navy seal", "brother's girlfriend", "ballet dancer", "second chance romance"]
+    },
+    
+    "bookDNA": {
+      "geneticCode": "MFBR-8E3A-9D2C",
+      "emotionWave": [
+        {"chapter": 1, "value": -0.7, "emotion": "被忽视的愤怒", "color": "#8B0000"},
+        {"chapter": 2, "value": -0.8, "emotion": "绝望崩溃", "color": "#FF0000"},
+        {"chapter": 3, "value": 0.3, "emotion": "被关注的温暖", "color": "#FFB6C1"},
+        {"chapter": 4, "value": 0.6, "emotion": "禁忌的心动", "color": "#FF69B4"},
+        {"chapter": 5, "value": 0.8, "emotion": "勇敢选择", "color": "#FFD700"},
+        {"chapter": 6, "value": -0.5, "emotion": "家庭冲突", "color": "#FF4500"},
+        {"chapter": 7, "value": -0.6, "emotion": "道德审判", "color": "#DC143C"},
+        {"chapter": 8, "value": 0.9, "emotion": "圆满幸福", "color": "#00FF00"}
+      ],
+      "paceRhythm": [
+        {"chapter": 1, "bpm": 110, "pace": "快"},
+        {"chapter": 2, "bpm": 90, "pace": "中"},
+        {"chapter": 3, "bpm": 80, "pace": "慢"},
+        {"chapter": 4, "bpm": 100, "pace": "中快"},
+        {"chapter": 5, "bpm": 120, "pace": "快"},
+        {"chapter": 6, "bpm": 130, "pace": "很快"},
+        {"chapter": 7, "bpm": 100, "pace": "中快"},
+        {"chapter": 8, "bpm": 70, "pace": "慢"}
+      ],
+      "coolPointDensity": [
+        {"chapter": 1, "density": 0.7},
+        {"chapter": 2, "density": 0.5},
+        {"chapter": 3, "density": 0.8},
+        {"chapter": 4, "density": 0.9},
+        {"chapter": 5, "density": 1.0},
+        {"chapter": 6, "density": 0.8},
+        {"chapter": 7, "density": 0.7},
+        {"chapter": 8, "density": 0.6}
+      ],
+      "conflictIntensity": [
+        {"chapter": 1, "intensity": 0.7},
+        {"chapter": 2, "intensity": 0.8},
+        {"chapter": 3, "intensity": 0.4},
+        {"chapter": 4, "intensity": 0.6},
+        {"chapter": 5, "intensity": 0.7},
+        {"chapter": 6, "intensity": 0.9},
+        {"chapter": 7, "intensity": 0.85},
+        {"chapter": 8, "intensity": 0.3}
+      ]
+    },
+    
+    "addictionIndex": {
+      "score": 8.5,
+      "level": "极易上头",
+      "factors": {
+        "suspenseHooks": {
+          "score": 8.5,
+          "weight": 0.25,
+          "count": 8,
+          "examples": [
+            "Ethan为什么总是第一个点赞？",
+            "禁忌之恋会如何发展？",
+            "Jake会如何报复？",
+            "家庭会接受他们吗？"
+          ]
+        },
+        "emotionalInvestment": {
+          "score": 9.0,
+          "weight": 0.20,
+          "reason": "被忽视的痛点极具共鸣，每个女性都能感同身受"
+        },
+        "paceControl": {
+          "score": 8.0,
+          "weight": 0.15,
+          "reason": "前3章铺垫，第4-5章爆发，第6-7章冲突，第8章圆满"
+        },
+        "rewardFrequency": {
+          "score": 8.5,
+          "weight": 0.20,
+          "reason": "每章都有爽点：被关注、被记住、被珍惜、打脸渣男"
+        },
+        "cliffhangers": {
+          "score": 8.0,
+          "weight": 0.20,
+          "count": 6,
+          "examples": [
+            "第1章末：这个决定会改变我的一生",
+            "第3章末：我的心跳失控了",
+            "第4章末：Jake的座位，空着",
+            "第5章末：愿意"
+          ]
+        }
+      },
+      "prediction": {
+        "bingeProbability": 0.88,
+        "averageReadingTime": "30-45分钟（一口气读完）",
+        "dropRate": 0.10,
+        "rereadRate": 0.40
+      },
+      "warnings": ["第7章家庭审判可能让部分读者感到压抑，但第8章立即反转"]
+    },
+    
+    "characters": {
+      "protagonist": {
+        "name": "女主（芭蕾舞者）",
+        "age": 26,
+        "occupation": "职业芭蕾舞者",
+        "personality": ["完美主义", "独立", "敏感", "勇敢", "追求真爱"],
+        "arc": "从被忽视的女友 → 勇敢追爱的女性 → 获得真爱的幸福者",
+        "likability": 9.2,
+        "relatability": 9.5
+      },
+      "supporting": [
+        {
+          "name": "Ethan（海军哥哥）",
+          "role": "真男人 / 暗恋守护者 / 男主",
+          "relationship": "Jake的哥哥，女主的真爱"
+        },
+        {
+          "name": "Jake（渣男友）",
+          "role": "渣男 / 忽视型男友 / 对比工具人",
+          "relationship": "女主的前男友，Ethan的弟弟"
+        },
+        {
+          "name": "Ethan父母",
+          "role": "反对者 / 道德审判者",
+          "relationship": "Ethan和Jake的父母"
+        }
+      ],
+      "relationships": [
+        {
+          "from": "女主",
+          "to": "Jake",
+          "type": "前任 / 渣男",
+          "description": "交往2年，5次忘记接机，忽视女主梦想"
+        },
+        {
+          "from": "女主",
+          "to": "Ethan",
+          "type": "真爱 / 禁忌之恋",
+          "description": "暗恋2年，记得女主的一切，最终在一起"
+        },
+        {
+          "from": "Ethan",
+          "to": "Jake",
+          "type": "兄弟 / 情敌",
+          "description": "从兄弟到情敌，最终和解"
+        }
+      ]
+    },
+    
+    "plot": {
+      "structure": "三幕式结构",
+      "act1": {
+        "chapters": "1-3",
+        "summary": "被忽视的痛苦 + 被关注的温暖",
+        "keyEvents": [
+          "第5次被忘记接机",
+          "Ethan出现并送她回家",
+          "Jake打游戏无视女主",
+          "Ethan暗中关注女主的一切",
+          "排练厅的心动时刻"
+        ]
+      },
+      "act2": {
+        "chapters": "4-6",
+        "summary": "禁忌之恋 + 勇敢选择 + 冲突爆发",
+        "keyEvents": [
+          "深夜聊天突破界限",
+          "演出当天Jake缺席，Ethan到场",
+          "女主与Jake分手",
+          "女主选择Ethan",
+          "Jake暴怒对峙"
+        ]
+      },
+      "act3": {
+        "chapters": "7-8",
+        "summary": "家庭审判 + 坚持真爱 + 圆满结局",
+        "keyEvents": [
+          "父母的道德审判",
+          "女主勇敢表态",
+          "3个月后的幸福生活",
+          "Jake的祝福短信",
+          "兄弟和解"
+        ]
+      },
+      "mainConflicts": [
+        "被忽视 vs 被珍惜（核心冲突）",
+        "禁忌之恋 vs 道德伦理",
+        "兄弟情义 vs 真爱选择",
+        "家庭压力 vs 个人幸福"
+      ],
+      "climax": "第5章女主选择Ethan，第6章Jake对峙"
+    },
+    
+    "goldenQuotes": [
+      "你值得被记住",
+      "因为你从来没有真正看见过我",
+      "我不能再和一个看不见我的人在一起了",
+      "她不是物品，不存在'抢'这个说法",
+      "如果爱一个人是错的，那我宁愿一直错下去",
+      "真正的爱，值得等待，值得战斗，值得一切"
+    ],
+    
+    "highlights": [
+      {
+        "event": "第5次被忘记接机，Ethan出现",
+        "type": "对比爽点",
+        "emotion": "被忽视的愤怒 + 被关注的温暖",
+        "impact": 9.5,
+        "webNovelStyle": "渣男友第5次忘了接我，他当兵的哥哥却记得",
+        "suitableFor": ["3秒抓眼球视频", "对比剪辑", "情感共鸣点"]
+      },
+      {
+        "event": "Ethan说'你值得被记住'",
+        "type": "情感爽点",
+        "emotion": "被珍惜、心动",
+        "impact": 10,
+        "webNovelStyle": "他说：你值得被记住。那一刻我的心跳失控了",
+        "suitableFor": ["金句海报", "情感短视频", "BookTok爆款"]
+      },
+      {
+        "event": "演出当天Jake缺席，Ethan到场",
+        "type": "对比打脸",
+        "emotion": "失望 + 感动",
+        "impact": 9.8,
+        "webNovelStyle": "我人生最重要的演出，渣男缺席，他哥哥却在观众席流泪",
+        "suitableFor": ["dramatic reveal", "对比视频"]
+      },
+      {
+        "event": "女主勇敢对抗父母",
+        "type": "独立女性爽点",
+        "emotion": "勇敢、坚定",
+        "impact": 9.0,
+        "webNovelStyle": "她不是物品，不存在'抢'这个说法",
+        "suitableFor": ["女性力量视频", "金句传播"]
+      },
+      {
+        "event": "Jake最终祝福",
+        "type": "和解爽点",
+        "emotion": "释怀、圆满",
+        "impact": 8.5,
+        "webNovelStyle": "渣男前任终于明白：有些人不是你的，就永远不是",
+        "suitableFor": ["圆满结局", "情感升华"]
+      }
+    ],
+    
+    "preliminarySellingPoints": [
+      {
+        "title": "渣男 vs 真男人",
+        "oneLinePitch": "男友5次忘了接我，他当兵的哥哥却记得我的每一个眼神",
+        "webNovelTags": ["渣男打脸", "真男人", "被忽视", "被珍惜"]
+      },
+      {
+        "title": "禁忌之恋",
+        "oneLinePitch": "我爱上了男友的哥哥，这是错的，但我停不下来",
+        "webNovelTags": ["禁忌", "兄弟情仇", "道德冲突", "勇敢追爱"]
+      },
+      {
+        "title": "军人守护",
+        "oneLinePitch": "海军陆战队员暗恋2年，只为等她看清渣男真面目",
+        "webNovelTags": ["军人", "暗恋", "守护", "制服诱惑"]
+      },
+      {
+        "title": "芭蕾舞者的觉醒",
+        "oneLinePitch": "追求完美的芭蕾舞者，终于学会为自己的幸福而战",
+        "webNovelTags": ["职场女性", "独立", "完美主义", "自我觉醒"]
+      },
+      {
+        "title": "被看见的力量",
+        "oneLinePitch": "他记得我的生日、演出、梦想，而我男友连我的Instagram都不知道",
+        "webNovelTags": ["被看见", "情感共鸣", "对比", "真爱"]
+      }
+    ]
+  },
+  
+  "audienceProfile": {
+    "primary": {
+      "age": "22-35岁",
+      "gender": "女性为主（90%）",
+      "occupation": ["白领", "职场女性", "大学生", "艺术工作者"],
+      "location": ["美国", "英国", "加拿大", "澳大利亚", "台湾", "新加坡"],
+      "painPoints": [
+        "被伴侣忽视",
+        "感情中不被珍惜",
+        "完美主义压力",
+        "渴望被真正看见"
+      ],
+      "desires": [
+        "遇到真正珍惜自己的人",
+        "勇敢追求真爱",
+        "打脸渣男",
+        "获得情感满足"
+      ]
+    }
+  }
+}

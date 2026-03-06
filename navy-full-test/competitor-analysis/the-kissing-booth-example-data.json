@@ -1,0 +1,55 @@
+{
+  "bookTitle": "The Kissing Booth",
+  "dataSource": "TikTok + Goodreads (示例数据)",
+  "collectedAt": "2026-03-06T02:41:53.568Z",
+  "tiktokData": {
+    "topVideos": [
+      {
+        "views": "2.5M",
+        "likes": "450K",
+        "comments": "12K",
+        "hook": "POV: You fall for your brother's best friend"
+      },
+      {
+        "views": "1.8M",
+        "likes": "320K",
+        "comments": "8K",
+        "hook": "The forbidden love that changed everything"
+      }
+    ],
+    "creatorDemographics": {
+      "age": "18-25 (70%)",
+      "gender": "Female (95%)"
+    },
+    "topComments": [
+      "This is literally my life right now 😭",
+      "I'm 22 and this hits different",
+      "Why is forbidden love so addictive??"
+    ]
+  },
+  "inferredAudience": {
+    "ageRange": "18-28",
+    "gender": "Female (95%)",
+    "interests": [
+      "Forbidden Romance",
+      "Young Adult",
+      "Drama"
+    ],
+    "painPoints": [
+      "Moral conflict",
+      "Seeking excitement",
+      "Rebellion"
+    ],
+    "platforms": [
+      "TikTok",
+      "Wattpad",
+      "Instagram"
+    ]
+  },
+  "keyInsights": [
+    "禁忌题材吸引18-28岁年轻女性",
+    "主要卖点：道德冲突、刺激感、偷偷摸摸的甜蜜",
+    "投放重点：TikTok（年轻用户多）",
+    "素材风格：暧昧、偷看、心跳加速"
+  ]
+}

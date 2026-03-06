@@ -208,10 +208,6 @@ output/
       {"point": "toxic relationship", "frequency": 38}
     ]
   },
-  "readingHabits": {
-    "bingeRead": 78,
-    "readAtNight": 65
-  },
   "socialMedia": {
     "platforms": {"TikTok": 72, "Instagram": 65}
   },

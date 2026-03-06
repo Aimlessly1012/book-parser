@@ -72,7 +72,6 @@
 **包含内容**：
 - 人口统计（年龄、性别、职业、地区）
 - 心理特征（兴趣、痛点、渴望）
-- 阅读习惯
 - 社交媒体偏好
 - 关键洞察
 - 推荐策略
@@ -153,7 +152,6 @@ competitor-analysis/
 - 职业分布
 - 高频痛点
 - 高频共鸣点
-- 阅读习惯
 
 **示例**：
 ```
@@ -162,9 +160,6 @@ competitor-analysis/
 
 评论："As someone who's been in a toxic relationship..."
 提取：痛点 = toxic relationship
-
-评论："I read this in one sitting at 2am..."
-提取：阅读习惯 = 熬夜一口气读完
 ```
 
 ---
@@ -206,7 +201,6 @@ competitor-analysis/
     "painPoints": [...],
     "desires": [...]
   },
-  "readingHabits": {...},
   "socialMedia": {...},
   "keyInsights": [...],
   "recommendations": [...]

@@ -1,0 +1,58 @@
+{
+  "bookTitle": "After",
+  "dataSource": "Wattpad + Reddit (示例数据)",
+  "collectedAt": "2026-03-06T02:41:53.596Z",
+  "wattpadData": {
+    "reads": "500M+",
+    "votes": "25M+",
+    "comments": "2M+",
+    "readerDemographics": {
+      "age": "16-25 (80%)",
+      "gender": "Female (92%)",
+      "topCountries": [
+        "USA",
+        "Philippines",
+        "UK",
+        "Canada"
+      ]
+    }
+  },
+  "redditInsights": {
+    "subreddit": "r/RomanceBooks",
+    "topPosts": [
+      "Books like After with toxic but addictive relationships",
+      "New Adult romance with character growth"
+    ],
+    "commonThemes": [
+      "Toxic to healthy relationship arc",
+      "College setting",
+      "First love intensity",
+      "Emotional rollercoaster"
+    ]
+  },
+  "inferredAudience": {
+    "ageRange": "18-25",
+    "gender": "Female (92%)",
+    "interests": [
+      "New Adult",
+      "College Romance",
+      "Emotional Drama"
+    ],
+    "painPoints": [
+      "First love confusion",
+      "Identity seeking",
+      "Emotional intensity"
+    ],
+    "platforms": [
+      "Wattpad",
+      "TikTok",
+      "Instagram"
+    ]
+  },
+  "keyInsights": [
+    "New Adult 吸引18-25岁大学生/职场新人",
+    "主要卖点：情感过山车、成长、初恋强度",
+    "投放重点：Wattpad、TikTok",
+    "素材风格：情感化、戏剧性、年轻化"
+  ]
+}
