@@ -29,8 +29,19 @@ AI 会自动：
 # 基础解析（只生成提示词）
 ./book-parser analyze book.txt --output output
 
-# 自动分析（需要 OpenClaw）
-./book-parser analyze book.txt --output output --auto
+# 全自动分析 (推荐)
+./book-parser analyze book.txt --output output --auto --api-key YOUR_KEY --compare
+```
+
+## 配置
+
+你可以创建 `config.json` 文件来持久化你的 AI 配置：
+```json
+{
+  "provider": "gemini",
+  "apiKey": "YOUR_API_KEY",
+  "model": "gemini-1.5-flash"
+}
 ```
 
 ## 输出文件

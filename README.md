@@ -13,11 +13,16 @@ chmod +x book-parser
 
 ## 使用方法
 
-### 基本用法
+### 完整自动化用法 (推荐)
 
-```bash
-./book-parser analyze <book.txt>
-```
+1. **配置 API Key**：复制 `config.json.template` 为 `config.json` 并填入你的 API Key。
+2. **一键运行**：
+   ```bash
+   ./book-parser analyze book.txt --output output --auto --compare --reverse-engineer
+   ```
+   AI 将自动完成解析、三幕式分析、竞品调研、卖点对比及画像生成。
+
+### 基础用法
 
 ### 指定输出目录
 
@@ -177,6 +182,14 @@ AI 会分析以下内容：
 2. 章节标题必须符合格式（第X章 标题）
 3. 建议分析前 10-30 章即可（AI 上下文限制）
 4. 生成的 prompt 可能很长，确保 AI 支持长文本
+
+## 附录：可用广告标签
+
+在使用 `query-ads` 时，可以使用以下标签：
+- **角色**: Alpha, Beta, Warrior (战士/军人)
+- **题材**: Romance (浪漫), Werewolf (狼人), Mafia (黑帮), Contemporary (当代), Urban (都市)
+- **情节**: Hate to Love (欢喜冤家), Lovers Reunion (旧情复燃), Regret (追妻火葬场/后悔)
+- **其他**: Girl Power (女性力量), Hombre lobo (西语狼人)
 
 ## 故障排除
 

@@ -4,6 +4,19 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// 读取配置文件
+let config = {};
+const configPath = path.join(__dirname, 'config.json');
+if (fs.existsSync(configPath)) {
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch (e) {
+    console.error('⚠️  Failed to parse config.json');
+  }
+}
+
+const AIService = require('./lib/ai-service');
+
 // 解析命令行参数
 const args = process.argv.slice(2);
 const command = args[0];
@@ -15,13 +28,14 @@ if (!command || !bookFile) {
   console.log('Options:');
   console.log('  --output <dir>         输出目录 (默认: ./output)');
   console.log('  --chapters <n>         解析章节数量 (默认: 全部)');
-  console.log('  --auto                 自动生成完整分析报告');
+  console.log('  --auto                 使用 AI 自动生成分析报告');
+  console.log('  --api-key <key>        AI API Key (也可通过环境变量 API_KEY 设置)');
+  console.log('  --api-provider <p>     AI 提供商: gemini|claude (默认: gemini)');
   console.log('  --compare              自动对比相似书籍并生成最终卖点');
   console.log('  --reverse-engineer     使用反向工程生成精确人群画像');
   console.log('');
   console.log('Examples:');
-  console.log('  ./book-parser analyze book.txt --output output');
-  console.log('  ./book-parser analyze book.txt --auto --compare');
+  console.log('  ./book-parser analyze book.txt --output output --auto --api-key YOUR_KEY');
   console.log('  ./book-parser analyze book.txt --auto --compare --reverse-engineer');
   process.exit(1);
 }
@@ -32,6 +46,9 @@ let maxChapters = null;
 let autoAnalyze = false;
 let compareMode = false;
 let reverseEngineer = false;
+let apiKey = args.includes('--api-key') ? null : (process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.CLAUDE_API_KEY || config.apiKey);
+let apiProvider = config.provider || 'gemini';
+if (config.model) process.env.AI_MODEL = config.model; // 传递给 AIService 的可能方式之一
 
 for (let i = 2; i < args.length; i++) {
   if (args[i] === '--output' && args[i + 1]) {
@@ -47,6 +64,12 @@ for (let i = 2; i < args.length; i++) {
     autoAnalyze = true; // compare 模式自动启用 auto
   } else if (args[i] === '--reverse-engineer') {
     reverseEngineer = true;
+  } else if (args[i] === '--api-key' && args[i + 1]) {
+    apiKey = args[i + 1];
+    i++;
+  } else if (args[i] === '--api-provider' && args[i + 1]) {
+    apiProvider = args[i + 1];
+    i++;
   }
 }
 
@@ -61,7 +84,8 @@ const bookContent = fs.readFileSync(bookFile, 'utf-8');
 // 解析章节
 function parseChapters(content) {
   const chapters = [];
-  const chapterRegex = /(?:【第\s*\d+\s*章】|第[一二三四五六七八九十百千\d]+章)\s*(.+?)(?=\n)/g;
+  // 增强正则表达式，支持更多格式
+  const chapterRegex = /(?:【\s*第\s*\d+\s*章\s*】|第\s*[一二三四五六七八九十百千\d]+\s*章|Chapter\s*\d+)\s*(.+?)(?=\n|$)/gi;
   
   let match;
   const positions = [];
@@ -126,46 +150,96 @@ fs.writeFileSync(promptFile, analysisPrompt);
 console.log(`✅ 分析提示词已生成: ${promptFile}`);
 
 if (autoAnalyze) {
-  console.log('\n🤖 Step 2/5: AI 分析书籍类型...');
-  console.log('⏳ 这可能需要 1-2 分钟，请耐心等待...\n');
-  
-  // 保存标记文件，让 OpenClaw 知道需要处理
-  const taskFile = path.join(outputDir, '.task.json');
-  fs.writeFileSync(taskFile, JSON.stringify({
-    step: 'analyze',
-    promptFile: promptFile,
-    outputDir: outputDir,
-    compareMode: compareMode,
-    reverseEngineer: reverseEngineer,
-    timestamp: Date.now()
-  }, null, 2));
-  
-  console.log('📝 任务已创建，请对 AI 说：');
-  console.log(`   "帮我完成 ${outputDir} 的分析任务"`);
-  console.log('');
-  console.log('AI 会自动完成：');
-  console.log('  ✅ Step 2: 分析书籍类型');
-  console.log('  ✅ Step 3: 查找相似书籍');
-  if (compareMode) {
-    console.log('  ✅ Step 4: 对比分析生成卖点');
-    console.log('  ✅ Step 5: 查询广告数据');
+  if (apiKey) {
+    runFullAutomation();
+  } else {
+    console.log('\n🤖 Step 2/5: AI 分析准备就绪 (手动触发模式)...');
+    
+    // 保存标记文件，让 OpenClaw 知道需要处理
+    const taskFile = path.join(outputDir, '.task.json');
+    fs.writeFileSync(taskFile, JSON.stringify({
+      step: 'analyze',
+      promptFile: promptFile,
+      outputDir: outputDir,
+      compareMode: compareMode,
+      reverseEngineer: reverseEngineer,
+      timestamp: Date.now()
+    }, null, 2));
+    
+    console.log('📝 任务已创建，由于未提供 API Key，请对 AI 说：');
+    console.log(`   "帮我完成 ${outputDir} 的分析任务"`);
   }
-  if (reverseEngineer) {
-    console.log('  ✅ Step 6: 反向工程生成精确人群画像');
-  }
-  
 } else {
   console.log('\n📝 下一步：');
-  console.log('1. 使用 --auto 参数自动生成分析：');
-  console.log(`   ./book-parser analyze ${bookFile} --output ${outputDir} --auto`);
+  console.log('1. 使用 --auto 参数并提供 --api-key 自动生成分析：');
+  console.log(`   ./book-parser analyze ${bookFile} --output ${outputDir} --auto --api-key YOUR_KEY`);
   console.log('');
-  console.log('2. 使用 --compare 参数生成完整对比分析：');
-  console.log(`   ./book-parser analyze ${bookFile} --output ${outputDir} --compare`);
-  console.log('');
-  console.log('3. 或手动完成：');
+  console.log('2. 或者手动使用：');
   console.log('   - 复制 analysis-prompt.txt 的内容');
   console.log('   - 发送给 AI (Claude Sonnet 4.5)');
-  console.log('   - AI 会返回完整的书籍分析 JSON');
+}
+
+/**
+ * 运行全自动工作流
+ */
+async function runFullAutomation() {
+  console.log('\n🚀 启动全自动分析流程...');
+  
+  try {
+    const aiService = new AIService({
+      apiKey: apiKey,
+      provider: apiProvider
+    });
+
+    console.log('🤖 Step 2/6: 正在通过 AI 生成书籍分析报告...');
+    console.log('⏳ 请稍候 (预计 30-90 秒)...');
+
+    const analysisResult = await aiService.chat(analysisPrompt);
+    
+    // 尝试提取 JSON 内容（处理 AI 可能返回的 Markdown 代码块）
+    let jsonContent = analysisResult;
+    if (jsonContent.includes('```json')) {
+      jsonContent = jsonContent.split('```json')[1].split('```')[0].trim();
+    } else if (jsonContent.includes('```')) {
+      jsonContent = jsonContent.split('```')[1].split('```')[0].trim();
+    }
+
+    const analysisFile = path.join(outputDir, 'book-analysis.json');
+    fs.writeFileSync(analysisFile, jsonContent);
+    console.log(`✅ 书籍分析已生成: ${analysisFile}`);
+
+    // 创建任务文件以便 auto-workflow 读取
+    const taskFile = path.join(outputDir, '.task.json');
+    fs.writeFileSync(taskFile, JSON.stringify({
+      step: 'analyze',
+      promptFile: promptFile,
+      outputDir: outputDir,
+      compareMode: compareMode,
+      reverseEngineer: reverseEngineer,
+      apiKey: apiKey,
+      apiProvider: apiProvider,
+      timestamp: Date.now()
+    }, null, 2));
+
+    // 调用 auto-workflow 完成后续步骤
+    console.log('\n🔗 正在触发后续自动化工作流 (查找竞品、查询广告等)...');
+    
+    const scriptPath = path.resolve(process.argv[1]);
+    const scriptDir = path.dirname(scriptPath);
+    const autoWorkflowScript = path.join(scriptDir, 'auto-workflow');
+
+    execSync(`${autoWorkflowScript} "${taskFile}"`, {
+      stdio: 'inherit',
+      env: { ...process.env, API_KEY: apiKey }
+    });
+
+    console.log('\n🏆 所有自动化步骤已顺利完成！');
+
+  } catch (error) {
+    console.error('\n❌ 全自动流程执行失败:');
+    console.error(error.message);
+    process.exit(1);
+  }
 }
 
 function generateAnalysisPrompt(chapters) {
