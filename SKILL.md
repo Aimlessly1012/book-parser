@@ -1,56 +1,86 @@
 # Book Parser Skill
 
-## 功能描述
+AI 驱动的书籍智能解析系统，为国际市场书籍营销提供精准洞察。
 
-AI 驱动的书籍智能解析系统，自动分析书籍内容并生成营销素材。
+## 功能
+
+1. **章节解析**：自动识别章节，支持多种格式
+2. **AI 分析**：一键生成完整的营销分析报告
+3. **相似书籍查询**：Google Books API
+4. **广告数据查询**：AnyNovel API
 
 ## 使用方法
 
+### 通过 OpenClaw 调用（推荐）
+
+```
+"帮我分析这本书：<book.txt>"
+```
+
+AI 会自动：
+1. 解析章节
+2. 生成分析提示词
+3. 调用 Claude 生成完整分析
+4. 保存结果到输出目录
+
+### 命令行使用
+
 ```bash
-# 解析书籍（从 TXT 文件）
-./book-parser analyze <book.txt>
+# 基础解析（只生成提示词）
+./book-parser analyze book.txt --output output
 
-# 指定输出目录
-./book-parser analyze <book.txt> --output ./output
-
-# 只分析前 N 章
-./book-parser analyze <book.txt> --chapters 20
+# 自动分析（需要 OpenClaw）
+./book-parser analyze book.txt --output output --auto
 ```
 
-## 输入格式
+## 输出文件
 
-TXT 文件，章节格式：
 ```
-第一章 章节标题
-章节内容...
-
-第二章 章节标题
-章节内容...
+output/
+├── chapters/              # 章节 JSON 文件
+├── analysis-prompt.txt    # AI 分析提示词
+└── book-analysis.json     # 完整分析报告（--auto 时生成）
 ```
 
-## 输出内容
+## 分析内容
 
-### 1. 书籍整体分析 (book-analysis.json)
-- 书籍 DNA 图谱（情感曲线、节奏、爽点密度、冲突强度）
-- 上头指数预测
+- 书籍 DNA 图谱（情感曲线、节奏、爽点密度）
+- 上头指数预测（5大维度评分）
 - 人物关系图谱
 - 整体情节梳理
+- 金句提取
+- 高光片段（事件化）
+- 卖点分析（网文爽点式）
 - 目标人群画像
 - 地区投放建议
 
-### 2. 章节详细分析 (chapters/)
-- 每章情节摘要
-- 情感分析
-- 爽点/虐点标注
-- 关键对话/金句
-- 适合做素材的片段
+## 工作流程
 
-### 3. 营销素材 (materials/)
-- 创意方向（5-10个角度）
-- 视频脚本（TikTok、Facebook、Instagram）
-- 图文文案
-- 广告文案
+1. **解析书籍** → 提取章节
+2. **生成提示词** → 包含完整章节内容
+3. **AI 分析** → 调用 Claude Sonnet 4.5
+4. **保存结果** → JSON 格式
 
-## 技术实现
+## 依赖
 
-使用 Claude Sonnet 4.5 进行 AI 分析，支持长文本处理。
+- Node.js 18+
+- OpenClaw（用于 AI 调用）
+
+## 示例
+
+```bash
+# 分析一本书
+./book-parser analyze navy-brother.txt --output navy-analysis --auto
+
+# 查找相似书籍
+./find-similar-books "military romance" "navy seal" --save
+
+# 查询广告数据
+./query-ads Romance --save
+```
+
+## 注意事项
+
+- 提示词文件可能很大（50-100KB）
+- AI 分析需要 1-2 分钟
+- 建议使用 Claude Sonnet 4.5 模型

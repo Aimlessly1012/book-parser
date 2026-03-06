@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 // 解析命令行参数
 const args = process.argv.slice(2);
@@ -9,13 +10,25 @@ const command = args[0];
 const bookFile = args[1];
 
 if (!command || !bookFile) {
-  console.log('Usage: ./book-parser analyze <book.txt> [--output <dir>] [--chapters <n>]');
+  console.log('Usage: ./book-parser analyze <book.txt> [options]');
+  console.log('');
+  console.log('Options:');
+  console.log('  --output <dir>    输出目录 (默认: ./output)');
+  console.log('  --chapters <n>    解析章节数量 (默认: 全部)');
+  console.log('  --auto            自动生成完整分析报告');
+  console.log('  --compare         自动对比相似书籍并生成最终卖点');
+  console.log('');
+  console.log('Examples:');
+  console.log('  ./book-parser analyze book.txt --output output');
+  console.log('  ./book-parser analyze book.txt --auto --compare');
   process.exit(1);
 }
 
 // 解析可选参数
 let outputDir = './output';
 let maxChapters = null;
+let autoAnalyze = false;
+let compareMode = false;
 
 for (let i = 2; i < args.length; i++) {
   if (args[i] === '--output' && args[i + 1]) {
@@ -24,6 +37,11 @@ for (let i = 2; i < args.length; i++) {
   } else if (args[i] === '--chapters' && args[i + 1]) {
     maxChapters = parseInt(args[i + 1]);
     i++;
+  } else if (args[i] === '--auto') {
+    autoAnalyze = true;
+  } else if (args[i] === '--compare') {
+    compareMode = true;
+    autoAnalyze = true; // compare 模式自动启用 auto
   }
 }
 
@@ -38,9 +56,6 @@ const bookContent = fs.readFileSync(bookFile, 'utf-8');
 // 解析章节
 function parseChapters(content) {
   const chapters = [];
-  // 支持两种格式：
-  // 1. 第一章 标题
-  // 2. 【第 1 章】标题
   const chapterRegex = /(?:【第\s*\d+\s*章】|第[一二三四五六七八九十百千\d]+章)\s*(.+?)(?=\n)/g;
   
   let match;
@@ -75,7 +90,7 @@ function parseChapters(content) {
   return chapters;
 }
 
-console.log('📚 解析书籍中...');
+console.log('📚 Step 1/5: 解析章节...');
 const chapters = parseChapters(bookContent);
 console.log(`✅ 找到 ${chapters.length} 个章节`);
 
@@ -104,10 +119,45 @@ const promptFile = path.join(outputDir, 'analysis-prompt.txt');
 fs.writeFileSync(promptFile, analysisPrompt);
 
 console.log(`✅ 分析提示词已生成: ${promptFile}`);
-console.log('\n📝 下一步：');
-console.log('1. 复制 analysis-prompt.txt 的内容');
-console.log('2. 发送给 AI (Claude Sonnet 4.5)');
-console.log('3. AI 会返回完整的书籍分析 JSON');
+
+if (autoAnalyze) {
+  console.log('\n🤖 Step 2/5: AI 分析书籍类型...');
+  console.log('⏳ 这可能需要 1-2 分钟，请耐心等待...\n');
+  
+  // 保存标记文件，让 OpenClaw 知道需要处理
+  const taskFile = path.join(outputDir, '.task.json');
+  fs.writeFileSync(taskFile, JSON.stringify({
+    step: 'analyze',
+    promptFile: promptFile,
+    outputDir: outputDir,
+    compareMode: compareMode,
+    timestamp: Date.now()
+  }, null, 2));
+  
+  console.log('📝 任务已创建，请对 AI 说：');
+  console.log(`   "帮我完成 ${outputDir} 的分析任务"`);
+  console.log('');
+  console.log('AI 会自动完成：');
+  console.log('  ✅ Step 2: 分析书籍类型');
+  console.log('  ✅ Step 3: 查找相似书籍');
+  if (compareMode) {
+    console.log('  ✅ Step 4: 对比分析生成卖点');
+    console.log('  ✅ Step 5: 查询广告数据');
+  }
+  
+} else {
+  console.log('\n📝 下一步：');
+  console.log('1. 使用 --auto 参数自动生成分析：');
+  console.log(`   ./book-parser analyze ${bookFile} --output ${outputDir} --auto`);
+  console.log('');
+  console.log('2. 使用 --compare 参数生成完整对比分析：');
+  console.log(`   ./book-parser analyze ${bookFile} --output ${outputDir} --compare`);
+  console.log('');
+  console.log('3. 或手动完成：');
+  console.log('   - 复制 analysis-prompt.txt 的内容');
+  console.log('   - 发送给 AI (Claude Sonnet 4.5)');
+  console.log('   - AI 会返回完整的书籍分析 JSON');
+}
 
 function generateAnalysisPrompt(chapters) {
   const bookInfo = {
@@ -121,7 +171,6 @@ function generateAnalysisPrompt(chapters) {
     }))
   };
   
-  // 取前10章的完整内容
   const sampleChapters = chapters.slice(0, Math.min(10, chapters.length));
   
   return `你是一位资深的网文编辑和营销专家，专注于爽文、言情小说的市场推广。请用网文读者的语言分析以下书籍。
@@ -150,15 +199,17 @@ ${ch.content}
 
 # 分析任务
 
-请按照以下 JSON 格式输出完整的分析结果：
+请按照以下 JSON 格式输出完整的分析结果（只输出 JSON，不要其他内容）：
 
 \`\`\`json
 {
   "bookAnalysis": {
     "basicInfo": {
       "genre": "书籍类型（如：都市爽文、豪门虐恋、重生复仇等）",
+      "subGenres": ["子类型1", "子类型2"],
       "coreHook": "一句话核心爽点（如：闺蜜睡了我未婚夫，我转身嫁给他死对头）",
-      "keywords": ["关键词1", "关键词2", "关键词3"]
+      "keywords": ["关键词1", "关键词2", "关键词3"],
+      "searchKeywords": ["用于搜索相似书籍的英文关键词1", "关键词2", "关键词3"]
     },
     
     "bookDNA": {
@@ -256,20 +307,7 @@ ${ch.content}
         "summary": "背叛与觉醒",
         "keyEvents": ["事件1", "事件2"]
       },
-      "act2": {
-        "chapters": "11-30",
-        "summary": "成长与逆袭",
-        "keyEvents": ["事件1", "事件2"]
-      },
-      "act3": {
-        "chapters": "31-50",
-        "summary": "高潮与圆满",
-        "keyEvents": ["事件1", "事件2"]
-      },
-      "mainConflicts": [
-        "主要冲突1",
-        "主要冲突2"
-      ],
+      "mainConflicts": ["主要冲突1", "主要冲突2"],
       "climax": "高潮章节和内容"
     },
     
@@ -285,140 +323,29 @@ ${ch.content}
         "emotion": "背叛、震惊",
         "impact": 10,
         "webNovelStyle": "推开门那一刻，我的世界崩了",
-        "suitableFor": ["3秒抓眼球视频", "dramatic reveal"],
-        "similarScenes": ["《三十而已》林有和许幻山", "《我的前半生》罗子君发现出轨"]
-      },
+        "suitableFor": ["3秒抓眼球视频", "dramatic reveal"]
+      }
+    ],
+    
+    "preliminarySellingPoints": [
       {
-        "event": "女主当众打脸渣男",
-        "type": "爽点",
-        "emotion": "解气、痛快",
-        "impact": 9,
-        "webNovelStyle": "当初你爱答不理，现在我让你高攀不起",
-        "suitableFor": ["打脸爽文视频", "逆袭素材"],
-        "similarScenes": ["《杜拉拉升职记》职场反击"]
+        "title": "卖点标题",
+        "oneLinePitch": "一句话卖点",
+        "webNovelTags": ["标签1", "标签2"]
       }
     ]
   },
-  
-  "sellingPoints": [
-    {
-      "pointId": "SP001",
-      "title": "闺蜜+未婚夫双重背叛",
-      "oneLinePitch": "闺蜜睡了我未婚夫两年，还说我不配被爱",
-      "webNovelTags": ["背叛", "打脸", "复仇", "逆袭"],
-      "similarBooks": [
-        {
-          "title": "《三十而已》",
-          "similarity": "闺蜜背叛",
-          "successRegion": ["中国", "台湾", "新加坡"]
-        },
-        {
-          "title": "《我的前半生》",
-          "similarity": "婚姻背叛+女性独立",
-          "successRegion": ["中国", "香港"]
-        }
-      ],
-      "targetAudience": "25-35岁，经历过背叛的女性",
-      "emotionalTrigger": "共鸣+愤怒+期待复仇",
-      "platforms": ["TikTok", "Facebook"],
-      "regions": ["美国", "台湾", "新加坡"],
-      "contentType": "3秒虐点+15秒反转",
-      "estimatedROI": "1:6",
-      "testBudget": "$500",
-      "priority": "极高"
-    }
-  ],
   
   "audienceProfile": {
     "primary": {
       "age": "25-35岁",
       "gender": "女性为主",
       "occupation": ["白领", "职场人"],
-      "education": "本科及以上",
-      "income": "月收入8k-2万",
-      "location": ["美国", "台湾", "新加坡", "日本"]
-    },
-    "psychographics": {
-      "interests": ["职场成长", "女性独立", "情感治愈"],
-      "painPoints": ["职场压力", "情感困惑", "经济焦虑"],
-      "desires": ["经济独立", "自我价值", "情感满足"],
-      "emotionalState": ["失恋中", "职场受挫", "寻求改变"]
-    },
-    "suitableFor": [
-      "职场新人",
-      "失恋者",
-      "全职妈妈想重返职场",
-      "追求经济独立的女性"
-    ],
-    "notSuitableFor": [
-      "男性读者（共鸣度低）",
-      "学生群体（职场内容难以理解）",
-      "退休人群（年龄差距大）"
-    ]
-  },
-  
-  "regionalStrategy": {
-    "coreMarkets": [
-      {
-        "country": "美国",
-        "budget": "25%",
-        "matchScore": 0.85,
-        "language": "英文",
-        "platforms": ["TikTok", "Facebook", "Instagram", "Google Ads"],
-        "strategy": "英文翻译版 + 华人社区推广"
-      },
-      {
-        "country": "台湾",
-        "budget": "20%",
-        "matchScore": 0.92,
-        "language": "繁体中文",
-        "platforms": ["Facebook", "Instagram", "TikTok", "Dcard"],
-        "strategy": "繁体中文本地化，台湾用语调整"
-      }
-    ]
-  },
-  },
-  
-  "regionalStrategy": {
-    "note": "投放地区应基于相似类型书籍的成功案例数据",
-    "coreMarkets": [
-      {
-        "country": "美国",
-        "budget": "25%",
-        "matchScore": 0.85,
-        "language": "英文",
-        "platforms": ["TikTok", "Facebook", "Instagram", "Google Ads"],
-        "strategy": "基于相似书籍在美国的表现",
-        "dataSource": "参考同类型书籍投放数据"
-      }
-    ]
+      "location": ["美国", "台湾", "新加坡"]
+    }
   }
 }
 \`\`\`
 
-# 重要提示
-
-1. **文案风格**：必须使用网文爽点式语言
-   - ❌ 错误："从背叛到自我救赎的心灵之旅"
-   - ✅ 正确："闺蜜睡了我未婚夫！我转身嫁给千亿总裁打脸渣男"
-
-2. **卖点提取**：一句话说清楚
-   - 要直接、刺激、有冲击力
-   - 让人一看就想点进去看
-
-3. **高光场景**：用事件描述，不用章节号
-   - ❌ 错误："Chapter 2: 发现背叛"
-   - ✅ 正确："撞见未婚夫和闺蜜在床上，她当场扔掉戒指"
-
-4. **相似书籍**：尽量找到真实的相似爆款书
-   - 分析它们的成功卖点
-   - 参考它们的投放地区
-
-5. **投放地区**：基于数据而非猜测
-   - 看相似书籍在哪些地区火
-   - 参考同类型题材的成功案例
-
-请严格按照以上要求输出 JSON 格式的分析结果。
-
-开始分析：`;
+请严格按照以上要求输出 JSON 格式的分析结果，只输出 JSON，不要其他内容。`;
 }

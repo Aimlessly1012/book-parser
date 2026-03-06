@@ -1,0 +1,149 @@
+#!/usr/bin/env node
+
+/**
+ * Book Parser Auto Workflow
+ * 自动化完成书籍分析的完整流程
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+// 读取任务文件
+const taskFile = process.argv[2];
+
+if (!taskFile || !fs.existsSync(taskFile)) {
+  console.error('Usage: ./auto-workflow <task-file.json>');
+  console.error('');
+  console.error('This script is called by OpenClaw AI to complete the analysis workflow.');
+  process.exit(1);
+}
+
+const task = JSON.parse(fs.readFileSync(taskFile, 'utf-8'));
+const { promptFile, outputDir, compareMode } = task;
+
+console.log('🤖 开始自动化工作流...\n');
+
+// Step 2: 生成书籍分析（由 AI 完成）
+console.log('📝 Step 2/5: 等待 AI 生成书籍分析...');
+console.log('   文件: book-analysis.json');
+console.log('   状态: 等待 AI 完成\n');
+
+// 检查 book-analysis.json 是否存在
+const analysisFile = path.join(outputDir, 'book-analysis.json');
+if (!fs.existsSync(analysisFile)) {
+  console.error('❌ 错误: book-analysis.json 不存在');
+  console.error('   请先让 AI 生成分析结果');
+  process.exit(1);
+}
+
+const analysis = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+console.log('✅ 书籍分析已完成');
+console.log(`   类型: ${analysis.bookAnalysis.basicInfo.genre}`);
+console.log(`   关键词: ${analysis.bookAnalysis.basicInfo.searchKeywords.join(', ')}\n`);
+
+// Step 3: 查找相似书籍
+console.log('🔍 Step 3/5: 查找相似书籍...');
+const keywords = analysis.bookAnalysis.basicInfo.searchKeywords || analysis.bookAnalysis.basicInfo.keywords;
+const keywordsStr = keywords.slice(0, 3).map(k => `"${k}"`).join(' ');
+
+try {
+  const scriptDir = path.dirname(process.argv[1]);
+  const findSimilarScript = path.join(scriptDir, 'find-similar-books');
+  
+  execSync(`${findSimilarScript} ${keywordsStr} --save`, {
+    cwd: outputDir,
+    stdio: 'inherit'
+  });
+  
+  // 找到最新的 similar-books 文件
+  const files = fs.readdirSync(outputDir);
+  const similarBooksFile = files
+    .filter(f => f.startsWith('similar-books-') && f.endsWith('.json'))
+    .sort()
+    .reverse()[0];
+  
+  if (similarBooksFile) {
+    // 重命名为标准名称
+    const oldPath = path.join(outputDir, similarBooksFile);
+    const newPath = path.join(outputDir, 'similar-books.json');
+    fs.renameSync(oldPath, newPath);
+    console.log(`✅ 相似书籍已保存: similar-books.json\n`);
+  }
+} catch (error) {
+  console.error('❌ 查找相似书籍失败:', error.message);
+  process.exit(1);
+}
+
+if (compareMode) {
+  // Step 4: 对比分析生成卖点（由 AI 完成）
+  console.log('📊 Step 4/5: 对比分析生成最终卖点...');
+  console.log('   等待 AI 完成对比分析\n');
+  
+  // 创建对比分析任务
+  const compareTaskFile = path.join(outputDir, '.compare-task.json');
+  fs.writeFileSync(compareTaskFile, JSON.stringify({
+    step: 'compare',
+    analysisFile: analysisFile,
+    similarBooksFile: path.join(outputDir, 'similar-books.json'),
+    outputFile: path.join(outputDir, 'selling-points-compare.json'),
+    timestamp: Date.now()
+  }, null, 2));
+  
+  console.log('📝 对比任务已创建');
+  console.log('   请对 AI 说: "帮我完成对比分析"\n');
+  
+  // Step 5: 查询广告数据
+  console.log('📈 Step 5/5: 查询广告数据...');
+  
+  try {
+    const scriptDir = path.dirname(process.argv[1]);
+    const queryAdsScript = path.join(scriptDir, 'query-ads');
+    
+    // 从类型中提取标签
+    const genre = analysis.bookAnalysis.basicInfo.genre;
+    let tag = 'Romance'; // 默认
+    
+    if (genre.includes('军人') || genre.includes('military')) {
+      tag = 'Warrior';
+    } else if (genre.includes('狼人') || genre.includes('werewolf')) {
+      tag = 'Werewolf';
+    } else if (genre.includes('黑帮') || genre.includes('mafia')) {
+      tag = 'Mafia';
+    }
+    
+    execSync(`${queryAdsScript} ${tag} --save`, {
+      cwd: outputDir,
+      stdio: 'inherit'
+    });
+    
+    // 找到最新的 ads-query 文件
+    const files = fs.readdirSync(outputDir);
+    const adsFile = files
+      .filter(f => f.startsWith('ads-query-') && f.endsWith('.json'))
+      .sort()
+      .reverse()[0];
+    
+    if (adsFile) {
+      // 重命名为标准名称
+      const oldPath = path.join(outputDir, adsFile);
+      const newPath = path.join(outputDir, 'ads-data.json');
+      fs.renameSync(oldPath, newPath);
+      console.log(`✅ 广告数据已保存: ads-data.json\n`);
+    }
+  } catch (error) {
+    console.error('⚠️  查询广告数据失败:', error.message);
+    console.error('   继续执行...\n');
+  }
+}
+
+console.log('✅ 自动化工作流完成！\n');
+console.log('📁 输出文件:');
+console.log(`   ${outputDir}/`);
+console.log('   ├── chapters/              # 章节文件');
+console.log('   ├── book-analysis.json     # 书籍分析');
+console.log('   ├── similar-books.json     # 相似书籍');
+if (compareMode) {
+  console.log('   ├── selling-points-compare.json  # 对比分析（待完成）');
+  console.log('   └── ads-data.json          # 广告数据');
+}
