@@ -1,14 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * Book Parser Auto Workflow
+ * Book Parser Auto Workflow (Enhanced)
  * 自动化完成书籍分析的完整流程
+ * 
+ * 优化点:
+ * - 健壮的 JSON 提取
+ * - 详细的错误处理和重试机制
+ * - 进度追踪和断点恢复
+ * - 完整的日志记录
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const AIService = require('./lib/ai-service');
+const JsonExtractor = require('./lib/json-extractor');
+const ProgressTracker = require('./lib/progress-tracker');
+const { ErrorHandler } = require('./lib/error-handler');
 
 // 读取任务文件
 const taskFile = process.argv[2];
@@ -20,70 +29,120 @@ if (!taskFile || !fs.existsSync(taskFile)) {
   process.exit(1);
 }
 
-const task = JSON.parse(fs.readFileSync(taskFile, 'utf-8'));
+const task = ErrorHandler.readJsonFile(taskFile);
 const { outputDir, apiKey, apiProvider, model, baseUrl } = task;
+
+// 初始化进度追踪器
+const tracker = new ProgressTracker(outputDir);
 
 console.log('🤖 开始全自动分析工作流...\n');
 
 // 检查 book-analysis.json 是否存在 (由 Step 2 完成)
 const analysisFile = path.join(outputDir, 'book-analysis.json');
-if (!fs.existsSync(analysisFile)) {
-  console.error('❌ 错误: book-analysis.json 不存在');
-  console.error('   请确保 Step 2 (核心 DNA 提取) 已完成');
-  process.exit(1);
-}
+ErrorHandler.validateFiles(['book-analysis.json'], outputDir);
 
-const analysis = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+const analysis = ErrorHandler.readJsonFile(analysisFile);
 console.log('✅ Step 2/6: 书籍核心基因 (DNA) 已就绪');
 console.log(`   类型: ${analysis.bookAnalysis.basicInfo.genre}`);
 console.log(`   关键词: ${analysis.bookAnalysis.basicInfo.searchKeywords.join(', ')}\n`);
 
 async function runWorkflow() {
   if (!apiKey) {
-    console.error('❌ 错误: 未提供 API Key，无法执行自主 AI 流程');
+    tracker.log('error', '未提供 API Key，无法执行自主 AI 流程');
     process.exit(1);
   }
 
   try {
     // Step 3: 生成精确人群画像 (DNA -> Profile)
-    console.log('👥 Step 3/6: 正在自主生成目标受众画像...');
-    await retry(() => runAutonomousProfileGeneration());
+    if (!tracker.isStepCompleted('profile-generation')) {
+      console.log('👥 Step 3/6: 正在自主生成目标受众画像...');
+      await ErrorHandler.wrap(
+        () => ErrorHandler.retry(
+          () => runAutonomousProfileGeneration(),
+          {
+            maxRetries: 3,
+            delayMs: 2000,
+            backoff: true,
+            stepName: 'profile-generation',
+            onRetry: (msg) => tracker.log('warn', msg)
+          }
+        ),
+        'profile-generation',
+        tracker
+      );
+    } else {
+      console.log('⏭️  Step 3/6: 受众画像已存在，跳过');
+    }
 
     // Step 4: 基于画像提炼核心卖点并打分 (DNA + Profile -> Selling Points)
-    console.log('📊 Step 4/6: 正在提炼适配卖点并进行多维度打分...');
-    await retry(() => runAutonomousSellingPointGeneration());
+    if (!tracker.isStepCompleted('selling-points-generation')) {
+      console.log('📊 Step 4/6: 正在提炼适配卖点并进行多维度打分...');
+      await ErrorHandler.wrap(
+        () => ErrorHandler.retry(
+          () => runAutonomousSellingPointGeneration(),
+          {
+            maxRetries: 3,
+            delayMs: 2000,
+            backoff: true,
+            stepName: 'selling-points-generation',
+            onRetry: (msg) => tracker.log('warn', msg)
+          }
+        ),
+        'selling-points-generation',
+        tracker
+      );
+    } else {
+      console.log('⏭️  Step 4/6: 卖点分析已存在，跳过');
+    }
 
     // Step 5: 基于卖点产出创意方向 (DNA + Profile + Selling Points -> Creative)
-    console.log('🎬 Step 5/6: 正在产出高转化广告创意方向...');
-    await retry(() => runAutonomousCreativeGeneration());
+    if (!tracker.isStepCompleted('creative-generation')) {
+      console.log('🎬 Step 5/6: 正在产出高转化广告创意方向...');
+      await ErrorHandler.wrap(
+        () => ErrorHandler.retry(
+          () => runAutonomousCreativeGeneration(),
+          {
+            maxRetries: 3,
+            delayMs: 2000,
+            backoff: true,
+            stepName: 'creative-generation',
+            onRetry: (msg) => tracker.log('warn', msg)
+          }
+        ),
+        'creative-generation',
+        tracker
+      );
+    } else {
+      console.log('⏭️  Step 5/6: 创意方向已存在，跳过');
+    }
 
     // Step 6: 生成综合营销报告
-    console.log('📝 Step 6/6: 正在聚合数据并生成最终营销报告...');
-    const scriptDir = path.dirname(process.argv[1]);
-    const reportGeneratorScript = path.join(scriptDir, 'report-generator');
-    execSync(`${reportGeneratorScript} "${outputDir}"`, { stdio: 'inherit' });
+    if (!tracker.isStepCompleted('report-generation')) {
+      console.log('📝 Step 6/6: 正在聚合数据并生成最终营销报告...');
+      await ErrorHandler.wrap(
+        () => {
+          const scriptDir = path.dirname(process.argv[1]);
+          const reportGeneratorScript = path.join(scriptDir, 'report-generator');
+          execSync(`${reportGeneratorScript} "${outputDir}"`, { stdio: 'inherit' });
+          return Promise.resolve();
+        },
+        'report-generation',
+        tracker
+      );
+    } else {
+      console.log('⏭️  Step 6/6: 报告已存在，跳过');
+    }
 
     console.log('\n✨ 全链路自动化工作流执行完毕！');
     console.log('📁 核心产出:');
     console.log(`   ${outputDir}/MARKETING-REPORT.md  <-- 最终全案\n`);
+    
+    tracker.printSummary();
   } catch (error) {
-    console.error(`\n❌ 工作流执行中断: ${error.message}`);
+    tracker.log('error', `工作流执行中断: ${error.message}`);
+    ErrorHandler.saveError(error, outputDir, 'workflow');
+    tracker.printSummary();
     process.exit(1);
-  }
-}
-
-/**
- * 带有重试机制的函数执行器
- */
-async function retry(fn, retries = 2) {
-  for (let i = 0; i <= retries; i++) {
-    try {
-      return await fn();
-    } catch (err) {
-      if (i === retries) throw err;
-      console.warn(`   ⚠️  执行失败，正在进行第 ${i + 1} 次重试... (${err.message})`);
-      await new Promise(r => setTimeout(r, 2000));
-    }
   }
 }
 
@@ -91,7 +150,7 @@ async function retry(fn, retries = 2) {
  * 运行自主画像生成 (DNA -> Profile)
  */
 async function runAutonomousProfileGeneration() {
-  const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+  const ourBook = ErrorHandler.readJsonFile(analysisFile);
   const profilePrompt = `你是一位专业的人群画像分析师。请根据以下书籍分析结果，反推并生成一个极其详细的目标人群画像。不需要参考竞品，直接从本书的核心基因、情节走向和情感冲突中推断。
 
 # 书籍深度分析 (DNA)
@@ -122,14 +181,17 @@ ${JSON.stringify(ourBook, null, 2)}
 }`;
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
-  const result = await aiService.chat(profilePrompt);
-  const jsonContent = extractJson(result);
+  tracker.log('info', '正在调用 AI 生成受众画像...');
   
-  // 验证 JSON
-  JSON.parse(jsonContent); 
+  const result = await aiService.chat(profilePrompt);
+  const jsonContent = JsonExtractor.extract(result);
+  
+  // 验证 JSON 格式
+  const parsed = JSON.parse(jsonContent);
+  tracker.log('info', `受众画像生成成功，包含 ${Object.keys(parsed).length} 个维度`);
   
   const targetFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
-  fs.writeFileSync(targetFile, jsonContent);
+  ErrorHandler.writeJsonFile(targetFile, parsed);
   console.log('   ✅ 受众画像已生成\n');
 }
 
@@ -137,11 +199,11 @@ ${JSON.stringify(ourBook, null, 2)}
  * 运行核心卖点提炼与评分 (DNA + Profile -> Selling Points)
  */
 async function runAutonomousSellingPointGeneration() {
-  const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+  const ourBook = ErrorHandler.readJsonFile(analysisFile);
   const profileFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
-  if (!fs.existsSync(profileFile)) throw new Error('受众画像文件丢失');
+  ErrorHandler.validateFiles(['audience-profile-reverse-engineered.json'], outputDir);
   
-  const profile = JSON.parse(fs.readFileSync(profileFile, 'utf-8'));
+  const profile = ErrorHandler.readJsonFile(profileFile);
 
   const generationPrompt = `你是一位顶尖的网文出海营销专家。请根据书籍分析结果和目标受众画像，提炼出最能打动该人群的**适配卖点**，并进行 1-10 分深度评分。
 
@@ -173,14 +235,17 @@ ${JSON.stringify(profile, null, 2)}
 }`;
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
-  const result = await aiService.chat(generationPrompt);
-  const jsonContent = extractJson(result);
+  tracker.log('info', '正在调用 AI 提炼适配卖点...');
   
-  // 验证 JSON
-  JSON.parse(jsonContent);
+  const result = await aiService.chat(generationPrompt);
+  const jsonContent = JsonExtractor.extract(result);
+  
+  // 验证 JSON 格式
+  const parsed = JSON.parse(jsonContent);
+  tracker.log('info', `卖点提炼成功，共 ${parsed.finalSellingPoints?.length || 0} 个卖点`);
 
   const outputFile = path.join(outputDir, 'selling-points-compare.json');
-  fs.writeFileSync(outputFile, jsonContent);
+  ErrorHandler.writeJsonFile(outputFile, parsed);
   console.log('   ✅ 适配卖点已生成\n');
 }
 
@@ -188,12 +253,12 @@ ${JSON.stringify(profile, null, 2)}
  * 运行创意方向产出 (DNA + Profile + Selling Points -> Creative)
  */
 async function runAutonomousCreativeGeneration() {
-  const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
-  const profile = JSON.parse(fs.readFileSync(path.join(outputDir, 'audience-profile-reverse-engineered.json'), 'utf-8'));
+  const ourBook = ErrorHandler.readJsonFile(analysisFile);
+  const profile = ErrorHandler.readJsonFile(path.join(outputDir, 'audience-profile-reverse-engineered.json'));
   const sellingPointsFile = path.join(outputDir, 'selling-points-compare.json');
-  if (!fs.existsSync(sellingPointsFile)) throw new Error('卖点分析文件丢失');
+  ErrorHandler.validateFiles(['selling-points-compare.json'], outputDir);
   
-  const sellingPoints = JSON.parse(fs.readFileSync(sellingPointsFile, 'utf-8'));
+  const sellingPoints = ErrorHandler.readJsonFile(sellingPointsFile);
 
   const creativePrompt = `你是一位顶级效果广告创意总监。请结合书籍基因、受众画像和核心卖点，产出高转化的广告创意方向（Facebook/TikTok）。
 
@@ -219,27 +284,18 @@ async function runAutonomousCreativeGeneration() {
 `;
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
-  const result = await aiService.chat(creativePrompt);
-  const jsonContent = extractJson(result);
+  tracker.log('info', '正在调用 AI 产出创意方向...');
   
-  // 验证 JSON
-  JSON.parse(jsonContent);
+  const result = await aiService.chat(creativePrompt);
+  const jsonContent = JsonExtractor.extract(result);
+  
+  // 验证 JSON 格式
+  const parsed = JSON.parse(jsonContent);
+  tracker.log('info', `创意方向生成成功，共 ${parsed.creativeDirections?.length || 0} 个方向`);
 
   const outputFile = path.join(outputDir, 'ad-creative-directions.json');
-  fs.writeFileSync(outputFile, jsonContent);
+  ErrorHandler.writeJsonFile(outputFile, parsed);
   console.log('   ✅ 创意方向已完成\n');
-}
-
-/**
- * 辅助函数：从 AI 回复中提取 JSON
- */
-function extractJson(raw) {
-  const start = raw.indexOf('{');
-  const end = raw.lastIndexOf('}');
-  if (start !== -1 && end !== -1 && end > start) {
-    return raw.substring(start, end + 1);
-  }
-  return raw.trim();
 }
 
 // 启动工作流

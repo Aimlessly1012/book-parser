@@ -16,6 +16,9 @@ if (fs.existsSync(configPath)) {
 }
 
 const AIService = require('./lib/ai-service');
+const JsonExtractor = require('./lib/json-extractor');
+const ProgressTracker = require('./lib/progress-tracker');
+const { ErrorHandler } = require('./lib/error-handler');
 
 // 解析命令行参数
 const args = process.argv.slice(2);
@@ -120,13 +123,13 @@ if (autoAnalyze) {
   if (apiKey) {
     runFullAutomation();
   } else {
-    console.log('\n🤖 Step 2/6: AI 分析准备就持 (等待提供 API Key)...');
+    console.log('\n🤖 Step 2/6: AI 分析准备就绪 (等待提供 API Key)...');
     const taskFile = path.join(outputDir, '.task.json');
-    fs.writeFileSync(taskFile, JSON.stringify({
+    ErrorHandler.writeJsonFile(taskFile, {
       step: 'analyze',
       outputDir: outputDir,
       timestamp: Date.now()
-    }, null, 2));
+    });
     console.log('📝 任务已创建。请提供 API Key 以继续。');
   }
 } else {
@@ -138,6 +141,10 @@ if (autoAnalyze) {
  */
 async function runFullAutomation() {
   console.log('\n🚀 启动全自动分析流程...');
+  
+  // 初始化进度追踪器
+  const tracker = new ProgressTracker(outputDir);
+  
   try {
     const aiService = new AIService({
       apiKey: apiKey,
@@ -149,29 +156,42 @@ async function runFullAutomation() {
     console.log('🤖 Step 2/6: 正在提取书籍核心基因 (DNA)...');
     console.log('⏳ 请稍候 (预计 30-90 秒)...');
 
-    const analysisResult = await aiService.chat(analysisPrompt);
-    let jsonContent = '';
-    const start = analysisResult.indexOf('{');
-    const end = analysisResult.lastIndexOf('}');
-    if (start !== -1 && end !== -1 && end > start) {
-      jsonContent = analysisResult.substring(start, end + 1);
-    } else {
-      jsonContent = analysisResult.trim();
-    }
+    tracker.startStep('dna-extraction');
+    
+    const analysisResult = await ErrorHandler.retry(
+      () => aiService.chat(analysisPrompt),
+      {
+        maxRetries: 3,
+        delayMs: 3000,
+        backoff: true,
+        stepName: 'dna-extraction',
+        onRetry: (msg) => tracker.log('warn', msg)
+      }
+    );
+    
+    const jsonContent = JsonExtractor.extract(analysisResult);
+    const parsed = JSON.parse(jsonContent); // 验证 JSON 格式
+    
+    tracker.log('info', `DNA 提取成功，包含 ${Object.keys(parsed.bookAnalysis || {}).length} 个分析维度`);
 
     const analysisFile = path.join(outputDir, 'book-analysis.json');
-    fs.writeFileSync(analysisFile, jsonContent);
+    ErrorHandler.writeJsonFile(analysisFile, parsed);
     console.log(`✅ DNA 提取完成: ${analysisFile}`);
+    
+    tracker.completeStep('dna-extraction', {
+      outputFile: analysisFile,
+      dimensions: Object.keys(parsed.bookAnalysis || {}).length
+    });
 
     const taskFile = path.join(outputDir, '.task.json');
-    fs.writeFileSync(taskFile, JSON.stringify({
+    ErrorHandler.writeJsonFile(taskFile, {
       outputDir: outputDir,
       apiKey: apiKey,
       apiProvider: apiProvider,
       model: config.model,
       baseUrl: config.baseUrl,
       timestamp: Date.now()
-    }, null, 2));
+    });
 
     console.log('\n🔗 正在触发后续自动化工作流 (画像、卖点、创意)...');
     const scriptDir = path.dirname(path.resolve(process.argv[1]));
@@ -179,7 +199,12 @@ async function runFullAutomation() {
 
     execSync(`${autoWorkflowScript} "${taskFile}"`, { stdio: 'inherit' });
     console.log('\n🏆 全链路分析流程顺利完成！');
+    
+    tracker.printSummary();
   } catch (error) {
+    tracker.log('error', `全自动流程执行失败: ${error.message}`);
+    ErrorHandler.saveError(error, outputDir, 'book-parser');
+    tracker.printSummary();
     console.error('\n❌ 全自动流程执行失败:', error.message);
     process.exit(1);
   }
