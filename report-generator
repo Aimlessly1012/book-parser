@@ -109,8 +109,7 @@ if (audienceProfile || analysis.audienceProfile) {
   
   if (profile.behavioral) {
     md += `### 📱 阅读习惯\n`;
-    md += `- **阅读行为**: ${profile.behavioral.readingHabits || 'N/A'}\n`;
-    md += `- **偏好平台**: ${profile.behavioral.platforms ? profile.behavioral.platforms.join(', ') : 'N/A'}\n\n`;
+    md += `- **阅读行为**: ${profile.behavioral.readingHabits || 'N/A'}\n\n`;
   }
 }
 
