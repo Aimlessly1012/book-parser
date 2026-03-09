@@ -181,8 +181,51 @@ async function runAutonomousSellingPointGeneration() {
   
   const profile = ErrorHandler.readJsonFile(profileFile);
 
-  // 使用增强版 prompt
-  const generationPrompt = EnhancedPrompts.sellingPoints(ourBook, profile);
+  // 只提取核心字段，大幅减少输入
+  const coreData = {
+    genre: ourBook.bookAnalysis?.basicInfo?.genre,
+    hook: ourBook.bookAnalysis?.basicInfo?.coreHook,
+    tags: ourBook.bookAnalysis?.basicInfo?.keywords?.slice(0, 5),
+    lead: ourBook.bookAnalysis?.characters?.protagonist?.name,
+    conflicts: ourBook.bookAnalysis?.plot?.mainConflicts?.slice(0, 3),
+    age: profile.primary?.age,
+    pain: profile.primary?.painPoints?.slice(0, 5)
+  };
+
+  const generationPrompt = `你是网文营销专家。提炼核心卖点并打分。
+
+# 核心信息
+类型: ${coreData.genre}
+钩子: ${coreData.hook}
+标签: ${coreData.tags?.join(', ')}
+主角: ${coreData.lead}
+冲突: ${coreData.conflicts?.join('; ')}
+
+# 受众
+年龄: ${coreData.age}
+痛点: ${coreData.pain?.join(', ')}
+
+输出JSON（简洁）:
+\`\`\`json
+{
+  "finalSellingPoints": [
+    {
+      "pointId": "SP001",
+      "title": "卖点标题（网文风格）",
+      "oneLinePitch": "一句话文案（直白刺激）",
+      "priority": "极高",
+      "psychologicalTriggers": "心理触发点",
+      "scoring": {
+        "marketAppeal": 9,
+        "uniqueness": 8,
+        "emotionalImpact": 10,
+        "overallScore": 9
+      }
+    }
+  ],
+  "competitiveAdvantage": { "summary": "核心竞争力" }
+}
+\`\`\``;
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
   tracker.log('info', '正在调用 AI 提炼适配卖点...');
