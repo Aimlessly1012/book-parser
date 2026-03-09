@@ -7,34 +7,52 @@
 ## 安装
 
 ```bash
-cd /root/.openclaw/workspace/book-parser
-chmod +x book-parser
+cd /root/.openclaw/workspace/b# 📖 Book Parser 全自动营销分析工具
+
+Book Parser 是一个面向网文出海营销的一站式全自动工具。它能从原始小说文本中提取核心基因 (DNA)，自主生成目标受众画像，并产出高转化的卖点评分及创意脚本。
+
+## 🚀 核心流程 (6-Stage Pipeline)
+
+1.  **文本解析**：识别章节并分片存储。
+2.  **核心 DNA 提取**：AI 深度阅读并提取核心钩子、情节曲线及上瘾指数。
+3.  **自主受众画像**：基于 DNA 反推精确的受众人口、心理、行为及审美维度。
+4.  **适配卖点提炼**：结合 DNA 与受众特征，产出 1-10 分的市场卖点。
+5.  **创意方向生成**：产出 Facebook/TikTok 脚本、视频 Brief 与钩子文案。
+6.  **全案报告合成**：生成最终的 `MARKETING-REPORT.md`。
+
+## 🛠 快速开始
+
+### 1. 配置环境
+在项目根目录下创建 `config.json`：
+```json
+{
+  "provider": "gemini",
+  "apiKey": "YOUR_API_KEY",
+  "model": "gemini-1.5-flash"
+}
 ```
 
-## 使用方法
-
-### 完整自动化用法 (推荐)
-
-1. **配置 API Key**：复制 `config.json.template` 为 `config.json` 并填入你的 API Key。
-2. **一键运行**：
-   ```bash
-   ./book-parser analyze book.txt --output output --auto --compare --reverse-engineer
-   ```
-   AI 将自动完成解析、三幕式分析、竞品调研、卖点对比及画像生成。
-
-### 基础用法
-
-### 指定输出目录
-
+### 2. 运行分析
 ```bash
-./book-parser analyze <book.txt> --output ./my-output
+./book-parser analyze "path/to/novel.txt" --auto
 ```
 
-### 只分析前 N 章
+## 📂 产出产物
+- `output/MARKETING-REPORT.md`：最终营销全案。
+- `output/book-analysis.json`：书籍深度 DNA。
+- `output/audience-profile-reverse-engineered.json`：受众画像。
+- `output/selling-points-compare.json`：卖点评分。
+- `output/ad-creative-directions.json`：广告素材创意。
 
-```bash
-./book-parser analyze <book.txt> --chapters 20
-```
+## 🔧 运行模式
+- **全自动模式** (`--auto`)：一键完成从解析到报告的所有步骤（推荐）。
+- **手动模式**：解析章节后通过生成的 `analysis-prompt.txt` 手动与 AI 交互。
+prompt.txt
+AI 分析提示词，包含：
+- 书籍基本信息
+- 章节列表
+- 前10章完整内容
+- 详细的分析任务说明
 
 ## 输入格式
 

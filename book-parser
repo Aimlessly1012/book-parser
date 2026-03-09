@@ -28,15 +28,12 @@ if (!command || !bookFile) {
   console.log('Options:');
   console.log('  --output <dir>         输出目录 (默认: ./output)');
   console.log('  --chapters <n>         解析章节数量 (默认: 全部)');
-  console.log('  --auto                 使用 AI 自动生成分析报告');
+  console.log('  --auto                 开启全自动 AI 营销分析 (DNA -> 画像 -> 卖点 -> 创意)');
   console.log('  --api-key <key>        AI API Key (也可通过环境变量 API_KEY 设置)');
   console.log('  --api-provider <p>     AI 提供商: gemini|claude (默认: gemini)');
-  console.log('  --compare              自动对比相似书籍并生成最终卖点');
-  console.log('  --reverse-engineer     使用反向工程生成精确人群画像');
   console.log('');
   console.log('Examples:');
-  console.log('  ./book-parser analyze book.txt --output output --auto --api-key YOUR_KEY');
-  console.log('  ./book-parser analyze book.txt --auto --compare --reverse-engineer');
+  console.log('  ./book-parser analyze book.txt --auto --api-key YOUR_KEY');
   process.exit(1);
 }
 
@@ -44,11 +41,8 @@ if (!command || !bookFile) {
 let outputDir = './output';
 let maxChapters = null;
 let autoAnalyze = false;
-let compareMode = false;
-let reverseEngineer = false;
-let apiKey = args.includes('--api-key') ? null : (process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.CLAUDE_API_KEY || config.apiKey);
+let apiKey = (process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.CLAUDE_API_KEY || config.apiKey);
 let apiProvider = config.provider || 'gemini';
-if (config.model) process.env.AI_MODEL = config.model; // 传递给 AIService 的可能方式之一
 
 for (let i = 2; i < args.length; i++) {
   if (args[i] === '--output' && args[i + 1]) {
@@ -59,11 +53,6 @@ for (let i = 2; i < args.length; i++) {
     i++;
   } else if (args[i] === '--auto') {
     autoAnalyze = true;
-  } else if (args[i] === '--compare') {
-    compareMode = true;
-    autoAnalyze = true; // compare 模式自动启用 auto
-  } else if (args[i] === '--reverse-engineer') {
-    reverseEngineer = true;
   } else if (args[i] === '--api-key' && args[i + 1]) {
     apiKey = args[i + 1];
     i++;
@@ -84,25 +73,18 @@ const bookContent = fs.readFileSync(bookFile, 'utf-8');
 // 解析章节
 function parseChapters(content) {
   const chapters = [];
-  // 增强正则表达式，支持更多格式
   const chapterRegex = /(?:【\s*第\s*\d+\s*章\s*】|第\s*[一二三四五六七八九十百千\d]+\s*章|Chapter\s*\d+)\s*(.+?)(?=\n|$)/gi;
   
   let match;
   const positions = [];
-  
   while ((match = chapterRegex.exec(content)) !== null) {
-    positions.push({
-      index: match.index,
-      title: match[0],
-      name: match[1]
-    });
+    positions.push({ index: match.index, title: match[0], name: match[1] });
   }
   
   for (let i = 0; i < positions.length; i++) {
     const start = positions[i].index;
     const end = i < positions.length - 1 ? positions[i + 1].index : content.length;
     const chapterContent = content.substring(start, end).trim();
-    
     chapters.push({
       number: i + 1,
       title: positions[i].title,
@@ -110,73 +92,45 @@ function parseChapters(content) {
       content: chapterContent,
       wordCount: chapterContent.length
     });
-    
-    if (maxChapters && chapters.length >= maxChapters) {
-      break;
-    }
+    if (maxChapters && chapters.length >= maxChapters) break;
   }
-  
   return chapters;
 }
 
-console.log('📚 Step 1/5: 解析章节...');
+console.log('📚 Step 1/6: 解析章节文本...');
 const chapters = parseChapters(bookContent);
 console.log(`✅ 找到 ${chapters.length} 个章节`);
 
-// 创建输出目录
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
-}
-
-// 保存章节信息
+if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 const chaptersDir = path.join(outputDir, 'chapters');
-if (!fs.existsSync(chaptersDir)) {
-  fs.mkdirSync(chaptersDir, { recursive: true });
-}
+if (!fs.existsSync(chaptersDir)) fs.mkdirSync(chaptersDir, { recursive: true });
 
-// 保存每个章节
 chapters.forEach((chapter, index) => {
   const chapterFile = path.join(chaptersDir, `chapter-${String(index + 1).padStart(3, '0')}.json`);
   fs.writeFileSync(chapterFile, JSON.stringify(chapter, null, 2));
 });
-
 console.log(`✅ 章节已保存到: ${chaptersDir}`);
 
-// 生成分析提示词
 const analysisPrompt = generateAnalysisPrompt(chapters);
 const promptFile = path.join(outputDir, 'analysis-prompt.txt');
 fs.writeFileSync(promptFile, analysisPrompt);
-
 console.log(`✅ 分析提示词已生成: ${promptFile}`);
 
 if (autoAnalyze) {
   if (apiKey) {
     runFullAutomation();
   } else {
-    console.log('\n🤖 Step 2/5: AI 分析准备就绪 (手动触发模式)...');
-    
-    // 保存标记文件，让 OpenClaw 知道需要处理
+    console.log('\n🤖 Step 2/6: AI 分析准备就持 (等待提供 API Key)...');
     const taskFile = path.join(outputDir, '.task.json');
     fs.writeFileSync(taskFile, JSON.stringify({
       step: 'analyze',
-      promptFile: promptFile,
       outputDir: outputDir,
-      compareMode: compareMode,
-      reverseEngineer: reverseEngineer,
       timestamp: Date.now()
     }, null, 2));
-    
-    console.log('📝 任务已创建，由于未提供 API Key，请对 AI 说：');
-    console.log(`   "帮我完成 ${outputDir} 的分析任务"`);
+    console.log('📝 任务已创建。请提供 API Key 以继续。');
   }
 } else {
-  console.log('\n📝 下一步：');
-  console.log('1. 使用 --auto 参数并提供 --api-key 自动生成分析：');
-  console.log(`   ./book-parser analyze ${bookFile} --output ${outputDir} --auto --api-key YOUR_KEY`);
-  console.log('');
-  console.log('2. 或者手动使用：');
-  console.log('   - 复制 analysis-prompt.txt 的内容');
-  console.log('   - 发送给 AI (Claude Sonnet 4.5)');
+  console.log('\n📝 下一步：使用 --auto 参数运行全自动分析。');
 }
 
 /**
@@ -184,7 +138,6 @@ if (autoAnalyze) {
  */
 async function runFullAutomation() {
   console.log('\n🚀 启动全自动分析流程...');
-  
   try {
     const aiService = new AIService({
       apiKey: apiKey,
@@ -193,32 +146,26 @@ async function runFullAutomation() {
       baseUrl: config.baseUrl
     });
 
-    console.log('🤖 Step 2/6: 正在通过 AI 生成书籍分析报告...');
+    console.log('🤖 Step 2/6: 正在提取书籍核心基因 (DNA)...');
     console.log('⏳ 请稍候 (预计 30-90 秒)...');
 
     const analysisResult = await aiService.chat(analysisPrompt);
-    
-    // 尝试提取 JSON 内容（处理 AI 可能返回的 Markdown 代码块）
-    let jsonContent = analysisResult;
-    if (jsonContent.includes('```json')) {
-      jsonContent = jsonContent.split('```json')[1].split('```')[0].trim();
-    } else if (jsonContent.includes('```')) {
-      jsonContent = jsonContent.split('```')[1].split('```')[0].trim();
+    let jsonContent = '';
+    const start = analysisResult.indexOf('{');
+    const end = analysisResult.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+      jsonContent = analysisResult.substring(start, end + 1);
+    } else {
+      jsonContent = analysisResult.trim();
     }
 
     const analysisFile = path.join(outputDir, 'book-analysis.json');
     fs.writeFileSync(analysisFile, jsonContent);
-    console.log(`✅ 书籍分析已生成: ${analysisFile}`);
+    console.log(`✅ DNA 提取完成: ${analysisFile}`);
 
-    // 创建任务文件以便 auto-workflow 读取
     const taskFile = path.join(outputDir, '.task.json');
     fs.writeFileSync(taskFile, JSON.stringify({
-      step: 'analyze',
-      bookTitle: path.basename(bookFile),
-      promptFile: promptFile,
       outputDir: outputDir,
-      compareMode: compareMode,
-      reverseEngineer: reverseEngineer,
       apiKey: apiKey,
       apiProvider: apiProvider,
       model: config.model,
@@ -226,23 +173,14 @@ async function runFullAutomation() {
       timestamp: Date.now()
     }, null, 2));
 
-    // 调用 auto-workflow 完成后续步骤
-    console.log('\n🔗 正在触发后续自动化工作流 (查找竞品、查询广告等)...');
-    
-    const scriptPath = path.resolve(process.argv[1]);
-    const scriptDir = path.dirname(scriptPath);
+    console.log('\n🔗 正在触发后续自动化工作流 (画像、卖点、创意)...');
+    const scriptDir = path.dirname(path.resolve(process.argv[1]));
     const autoWorkflowScript = path.join(scriptDir, 'auto-workflow');
 
-    execSync(`${autoWorkflowScript} "${taskFile}"`, {
-      stdio: 'inherit',
-      env: { ...process.env, API_KEY: apiKey }
-    });
-
-    console.log('\n🏆 所有自动化步骤已顺利完成！');
-
+    execSync(`${autoWorkflowScript} "${taskFile}"`, { stdio: 'inherit' });
+    console.log('\n🏆 全链路分析流程顺利完成！');
   } catch (error) {
-    console.error('\n❌ 全自动流程执行失败:');
-    console.error(error.message);
+    console.error('\n❌ 全自动流程执行失败:', error.message);
     process.exit(1);
   }
 }
@@ -389,14 +327,19 @@ ${ch.content}
     },
     
     "plot": {
-      "structure": "三幕式结构",
-      "act1": {
-        "chapters": "1-10",
-        "summary": "背叛与觉醒",
-        "keyEvents": ["事件1", "事件2"]
-      },
+      "structure": "三幕式结构或英雄之旅",
       "mainConflicts": ["主要冲突1", "主要冲突2"],
-      "climax": "高潮章节和内容"
+      "climax": "高潮章节和内容预期",
+      "chapterBreakdown": [
+        {
+          "chapter": 1,
+          "phase": "铺垫/发展/冲突/高潮/悬念",
+          "summary": "本质剧情概括",
+          "intensity": 0.9,
+          "hookType": "悬念钩子/情感钩子/反转钩子"
+        }
+      ],
+      "plotCurve": "对前10章情节波动的综合描述，指出哪里是爆点，哪里是平铺点"
     },
     
     "goldenQuotes": [

@@ -21,308 +21,225 @@ if (!taskFile || !fs.existsSync(taskFile)) {
 }
 
 const task = JSON.parse(fs.readFileSync(taskFile, 'utf-8'));
-const { bookTitle, promptFile, outputDir, compareMode, reverseEngineer, apiKey, apiProvider, model, baseUrl } = task;
+const { outputDir, apiKey, apiProvider, model, baseUrl } = task;
 
-console.log('🤖 开始自动化工作流...\n');
+console.log('🤖 开始全自动分析工作流...\n');
 
-// Step 2: 生成书籍分析（由 AI 完成）
-console.log('📝 Step 2/6: 等待 AI 生成书籍分析...');
-console.log('   文件: book-analysis.json');
-console.log('   状态: 等待 AI 完成\n');
-
-// 检查 book-analysis.json 是否存在
+// 检查 book-analysis.json 是否存在 (由 Step 2 完成)
 const analysisFile = path.join(outputDir, 'book-analysis.json');
 if (!fs.existsSync(analysisFile)) {
   console.error('❌ 错误: book-analysis.json 不存在');
-  console.error('   请先让 AI 生成分析结果');
+  console.error('   请确保 Step 2 (核心 DNA 提取) 已完成');
   process.exit(1);
 }
 
 const analysis = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
-console.log('✅ 书籍分析已完成');
+console.log('✅ Step 2/6: 书籍核心基因 (DNA) 已就绪');
 console.log(`   类型: ${analysis.bookAnalysis.basicInfo.genre}`);
 console.log(`   关键词: ${analysis.bookAnalysis.basicInfo.searchKeywords.join(', ')}\n`);
 
-// Step 3: 查找相似书籍
-console.log('🔍 Step 3/5: 查找相似书籍...');
-const keywords = analysis.bookAnalysis.basicInfo.searchKeywords || analysis.bookAnalysis.basicInfo.keywords;
-const keywordsStr = keywords.slice(0, 3).map(k => `"${k}"`).join(' ');
+async function runWorkflow() {
+  if (!apiKey) {
+    console.error('❌ 错误: 未提供 API Key，无法执行自主 AI 流程');
+    process.exit(1);
+  }
 
-// Step 3: 查找相似书籍
-const finalSimilarBooksPath = path.join(outputDir, 'similar-books.json');
-if (fs.existsSync(finalSimilarBooksPath)) {
-  console.log('✅ 已存在相似书籍数据，跳过搜索。\n');
-} else {
-  console.log('🔍 Step 3/5: 查找相似书籍...');
   try {
+    // Step 3: 生成精确人群画像 (DNA -> Profile)
+    console.log('👥 Step 3/6: 正在自主生成目标受众画像...');
+    await retry(() => runAutonomousProfileGeneration());
+
+    // Step 4: 基于画像提炼核心卖点并打分 (DNA + Profile -> Selling Points)
+    console.log('📊 Step 4/6: 正在提炼适配卖点并进行多维度打分...');
+    await retry(() => runAutonomousSellingPointGeneration());
+
+    // Step 5: 基于卖点产出创意方向 (DNA + Profile + Selling Points -> Creative)
+    console.log('🎬 Step 5/6: 正在产出高转化广告创意方向...');
+    await retry(() => runAutonomousCreativeGeneration());
+
+    // Step 6: 生成综合营销报告
+    console.log('📝 Step 6/6: 正在聚合数据并生成最终营销报告...');
     const scriptDir = path.dirname(process.argv[1]);
-    const findSimilarScript = path.join(scriptDir, 'find-similar-books');
-    
-    // 使用传入的 bookTitle，如果没有则回退到关键词中的第一个
-    const searchTitle = bookTitle || (keywords[0] ? keywords[0] : 'Fiction');
-    
-    execSync(`${findSimilarScript} "${searchTitle}" ${keywordsStr} --save`, {
-      cwd: outputDir,
-      stdio: 'inherit'
-    });
-    
-    // 找到最新的 similar-books 文件
-    const files = fs.readdirSync(outputDir);
-    const similarBooksFile = files
-      .filter(f => f.startsWith('similar-books-') && f.endsWith('.json'))
-      .sort()
-      .reverse()[0];
-    
-    if (similarBooksFile) {
-      // 重命名为标准名称
-      const oldPath = path.join(outputDir, similarBooksFile);
-      fs.renameSync(oldPath, finalSimilarBooksPath);
-      console.log(`✅ 相似书籍已保存: similar-books.json\n`);
-    }
+    const reportGeneratorScript = path.join(scriptDir, 'report-generator');
+    execSync(`${reportGeneratorScript} "${outputDir}"`, { stdio: 'inherit' });
+
+    console.log('\n✨ 全链路自动化工作流执行完毕！');
+    console.log('📁 核心产出:');
+    console.log(`   ${outputDir}/MARKETING-REPORT.md  <-- 最终全案\n`);
   } catch (error) {
-    console.error('❌ 查找相似书籍失败:', error.message);
-    // 如果是可选步骤，可以不 exit
+    console.error(`\n❌ 工作流执行中断: ${error.message}`);
     process.exit(1);
   }
 }
 
-async function runWorkflow() {
-  if (compareMode) {
-    // Step 4: 对比分析生成卖点
-    console.log('📊 Step 4/5: 对比分析生成最终卖点...');
-    
-    if (apiKey) {
-      await runAutonomousComparison();
-    } else {
-      console.log('   等待 AI 完成对比分析\n');
-      
-      // 创建对比分析任务
-      const compareTaskFile = path.join(outputDir, '.compare-task.json');
-      fs.writeFileSync(compareTaskFile, JSON.stringify({
-        step: 'compare',
-        analysisFile: analysisFile,
-        similarBooksFile: path.join(outputDir, 'similar-books.json'),
-        outputFile: path.join(outputDir, 'selling-points-compare.json'),
-        timestamp: Date.now()
-      }, null, 2));
-      
-      console.log('📝 对比任务已创建');
-      console.log('   请对 AI 说: "帮我完成对比分析"\n');
+/**
+ * 带有重试机制的函数执行器
+ */
+async function retry(fn, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i === retries) throw err;
+      console.warn(`   ⚠️  执行失败，正在进行第 ${i + 1} 次重试... (${err.message})`);
+      await new Promise(r => setTimeout(r, 2000));
     }
-
-    // Step 5: 查询广告数据
-    await runStep5();
-  } else {
-    // 即使不是 compareMode，如果 reverseEngineer 为 true，可能也需要运行
-  }
-
-  // Step 6: 反向工程生成精确人群画像
-  if (reverseEngineer) {
-    await runStep6();
-  }
-
-  // Step 7: 生成综合营销报告
-  console.log('📝 Step 7/7: 生成最终营销报告 (MARKETING-REPORT.md)...');
-  try {
-    const scriptDir = path.dirname(process.argv[1]);
-    const reportGeneratorScript = path.join(scriptDir, 'report-generator');
-    execSync(`${reportGeneratorScript} "${outputDir}"`, {
-      stdio: 'inherit'
-    });
-  } catch (error) {
-    console.error('⚠️  生成营销报告失败:', error.message);
-  }
-
-  console.log('✅ 自动化工作流完成！\n');
-  console.log('📁 输出文件:');
-  console.log(`   ${outputDir}/`);
-  console.log('   ├── chapters/              # 章节文件');
-  console.log('   ├── book-analysis.json     # 书籍分析');
-  console.log('   ├── similar-books.json     # 相似书籍');
-  if (compareMode) {
-    console.log('   ├── selling-points-compare.json  # 对比分析');
-    console.log('   └── ads-data.json          # 广告数据');
-  }
-  if (reverseEngineer) {
-    console.log('   ├── audience-profile-reverse-engineered.json  # 精确人群画像');
-    console.log('   └── competitor-analysis/   # 竞品分析数据');
   }
 }
 
 /**
- * 运行自主对比分析
+ * 运行自主画像生成 (DNA -> Profile)
  */
-async function runAutonomousComparison() {
-  const similarBooksFile = path.join(outputDir, 'similar-books.json');
-  if (!fs.existsSync(similarBooksFile)) {
-    console.error('⚠️  未找到相似书籍数据，跳过对比分析\n');
-    return;
-  }
-
-  const similarBooks = JSON.parse(fs.readFileSync(similarBooksFile, 'utf-8'));
+async function runAutonomousProfileGeneration() {
   const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+  const profilePrompt = `你是一位专业的人群画像分析师。请根据以下书籍分析结果，反推并生成一个极其详细的目标人群画像。不需要参考竞品，直接从本书的核心基因、情节走向和情感冲突中推断。
 
-  const comparePrompt = `你是一位顶尖的网文出海营销专家。请对比我们的书和以下竞品，生成最终的卖点分析，特别侧重于广告素材的直接应用。
-
-# 我们的书
+# 书籍深度分析 (DNA)
 ${JSON.stringify(ourBook, null, 2)}
 
-# 相似竞品
-${JSON.stringify(similarBooks, null, 2)}
-
-# 任务
-请按照以下 JSON 格式输出对比分析结果（只输出 JSON）：
+# 任务目标
+请输出 JSON 格式（只输出 JSON）：
 {
-  "comparisonTable": [
-    { "dimension": "维度名称", "ourBook": "我们的表现", "similarBooks": { "书名": "表现" }, "advantage": "优势说明" }
-  ],
+  "primary": {
+    "age": "年龄段",
+    "gender": "性别倾向",
+    "occupation": ["职场人", "学生"],
+    "location": ["美国", "东南亚"],
+    "painPoints": ["痛点1", "痛点2"],
+    "desires": ["动机1", "动机2"]
+  },
+  "behavioral": {
+    "readingHabits": "阅读场景描述",
+    "genreFamiliarity": "熟悉程度",
+    "platforms": ["TikTok", "WebNovel"]
+  },
+  "psychographics": {
+    "psychologicalDrivers": "深层心理驱动力",
+    "aesthetic": "审美偏好（视频画面风格）",
+    "readingTriggers": "触发阅读、点击的核心点"
+  },
+  "keyInsights": ["洞察1", "洞察2"]
+}`;
+
+  const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
+  const result = await aiService.chat(profilePrompt);
+  const jsonContent = extractJson(result);
+  
+  // 验证 JSON
+  JSON.parse(jsonContent); 
+  
+  const targetFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
+  fs.writeFileSync(targetFile, jsonContent);
+  console.log('   ✅ 受众画像已生成\n');
+}
+
+/**
+ * 运行核心卖点提炼与评分 (DNA + Profile -> Selling Points)
+ */
+async function runAutonomousSellingPointGeneration() {
+  const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+  const profileFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
+  if (!fs.existsSync(profileFile)) throw new Error('受众画像文件丢失');
+  
+  const profile = JSON.parse(fs.readFileSync(profileFile, 'utf-8'));
+
+  const generationPrompt = `你是一位顶尖的网文出海营销专家。请根据书籍分析结果和目标受众画像，提炼出最能打动该人群的**适配卖点**，并进行 1-10 分深度评分。
+
+# 书籍 DNA
+${JSON.stringify(ourBook, null, 2)}
+
+# 目标受众画像
+${JSON.stringify(profile, null, 2)}
+
+# 任务要求
+请输出 JSON 格式（只输出 JSON）：
+{
   "finalSellingPoints": [
     {
       "pointId": "SP001",
       "title": "卖点标题",
-      "oneLinePitch": "一句话核心文案（用于广告 Hook）",
-      "marketValidation": "市场验证说明",
-      "differentiator": "为什么我们比竞品更爽/更虐？",
-      "estimatedROI": "1:X",
-      "priority": "极高",
-      "adCopy": {
-        "facebook": { "hook": "吸睛标题", "body": "正文内容（带情绪引导）" },
-        "tiktok": { "videoHook": "前3秒视觉/文案钩子", "caption": "短视频配文" }
-      },
-      "visualDirections": "针对此卖点的短视频/海报画面描述（给设计师的 Brief）",
-      "psychologicalTriggers": "触发读者的心理动机（如：代入感、优越感、情感宣泄）",
-      "targetingKeywords": ["投放兴趣关键词1", "投放兴趣关键词2"],
+      "oneLinePitch": "一句话核心文案",
+      "priority": "极高/中/低",
+      "psychologicalTriggers": "背后的心理动机",
       "scoring": {
-        "marketAppeal": "1-10分，基于竞品热度评估潜力",
-        "uniqueness": "1-10分，对比竞品的差异化程度",
-        "emotionalImpact": "1-10分，对读者情绪的带动能力",
-        "overallScore": "1-10分，综合推荐指数"
+        "marketAppeal": 9,
+        "uniqueness": 8,
+        "emotionalImpact": 10,
+        "overallScore": 9
       }
     }
   ],
-  "competitiveAdvantage": { "summary": "综合评价", "uniqueValue": ["独特价值1", "独特价值2"] }
+  "competitiveAdvantage": { "summary": "核心竞争力评价" }
 }`;
 
-  console.log('🤖 正在自主生成富媒体化对比分析...');
-  try {
-    const aiService = new AIService({ 
-      apiKey, 
-      provider: apiProvider,
-      model: model,
-      baseUrl: baseUrl
-    });
-    const result = await aiService.chat(comparePrompt);
-    
-    let jsonContent = result;
-    if (jsonContent.includes('```json')) jsonContent = jsonContent.split('```json')[1].split('```')[0].trim();
-    else if (jsonContent.includes('```')) jsonContent = jsonContent.split('```')[1].split('```')[0].trim();
+  const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
+  const result = await aiService.chat(generationPrompt);
+  const jsonContent = extractJson(result);
+  
+  // 验证 JSON
+  JSON.parse(jsonContent);
 
-    const outputFile = path.join(outputDir, 'selling-points-compare.json');
-    fs.writeFileSync(outputFile, jsonContent);
-    console.log(`✅ 对比分析已完成: selling-points-compare.json\n`);
-  } catch (error) {
-    console.error('⚠️  对比分析失败:', error.message);
-  }
+  const outputFile = path.join(outputDir, 'selling-points-compare.json');
+  fs.writeFileSync(outputFile, jsonContent);
+  console.log('   ✅ 适配卖点已生成\n');
 }
 
 /**
- * Step 5: 查询广告数据
+ * 运行创意方向产出 (DNA + Profile + Selling Points -> Creative)
  */
-async function runStep5() {
-  console.log('📈 Step 5/5: 查询广告数据...');
+async function runAutonomousCreativeGeneration() {
+  const ourBook = JSON.parse(fs.readFileSync(analysisFile, 'utf-8'));
+  const profile = JSON.parse(fs.readFileSync(path.join(outputDir, 'audience-profile-reverse-engineered.json'), 'utf-8'));
+  const sellingPointsFile = path.join(outputDir, 'selling-points-compare.json');
+  if (!fs.existsSync(sellingPointsFile)) throw new Error('卖点分析文件丢失');
   
-  try {
-    const scriptDir = path.dirname(process.argv[1]);
-    const queryAdsScript = path.join(scriptDir, 'query-ads');
-    
-    // 从类型中提取标签
-    const genre = analysis.bookAnalysis.basicInfo.genre;
-    let tag = 'Romance'; // 默认
-    
-    if (genre.includes('军人') || genre.includes('military')) {
-      tag = 'Warrior';
-    } else if (genre.includes('狼人') || genre.includes('werewolf')) {
-      tag = 'Werewolf';
-    } else if (genre.includes('黑帮') || genre.includes('mafia')) {
-      tag = 'Mafia';
+  const sellingPoints = JSON.parse(fs.readFileSync(sellingPointsFile, 'utf-8'));
+
+  const creativePrompt = `你是一位顶级效果广告创意总监。请结合书籍基因、受众画像和核心卖点，产出高转化的广告创意方向（Facebook/TikTok）。
+
+# 输入数据
+- 核心信息: ${JSON.stringify(ourBook.bookAnalysis.basicInfo, null, 2)}
+- 角色背景: ${JSON.stringify(ourBook.bookAnalysis.characters.protagonist, null, 2)}
+- 受众画像: ${JSON.stringify(profile, null, 2)}
+- 核心卖点: ${JSON.stringify(sellingPoints.finalSellingPoints, null, 2)}
+
+# 产出目标
+请输出 JSON 格式（只输出 JSON）：
+{
+  "creativeDirections": [
+    {
+      "pointId": "SP001",
+      "creativeHook": "第一道视角视觉描述",
+      "tiktok": { "videoScript": "视频前3秒、中间转折及结尾脚本", "caption": "配文" },
+      "visualBrief": "视觉画面细节要求",
+      "emotionalAngle": "挖掘的心理切入点"
     }
-    
-    execSync(`${queryAdsScript} ${tag} --save`, {
-      cwd: outputDir,
-      stdio: 'inherit'
-    });
-    
-    // 找到最新的 ads-query 文件
-    const files = fs.readdirSync(outputDir);
-    const adsFile = files
-      .filter(f => f.startsWith('ads-query-') && f.endsWith('.json'))
-      .sort()
-      .reverse()[0];
-    
-    if (adsFile) {
-      // 重命名为标准名称
-      const oldPath = path.join(outputDir, adsFile);
-      const newPath = path.join(outputDir, 'ads-data.json');
-      fs.renameSync(oldPath, newPath);
-      console.log(`✅ 广告数据已保存: ads-data.json\n`);
-    }
-  } catch (error) {
-    console.error('⚠️  查询广告数据失败:', error.message);
-    console.error('   继续执行...\n');
-  }
+  ]
+}
+`;
+
+  const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
+  const result = await aiService.chat(creativePrompt);
+  const jsonContent = extractJson(result);
+  
+  // 验证 JSON
+  JSON.parse(jsonContent);
+
+  const outputFile = path.join(outputDir, 'ad-creative-directions.json');
+  fs.writeFileSync(outputFile, jsonContent);
+  console.log('   ✅ 创意方向已完成\n');
 }
 
 /**
- * Step 6: 反向工程生成精确人群画像
+ * 辅助函数：从 AI 回复中提取 JSON
  */
-async function runStep6() {
-  console.log('🔍 Step 6/6: 反向工程生成精确人群画像...');
-  
-  try {
-    const scriptDir = path.dirname(process.argv[1]);
-    const reverseEngineerScript = path.join(scriptDir, 'reverse-engineer');
-    
-    // 从相似书籍中提取书名
-    const similarBooksFile = path.join(outputDir, 'similar-books.json');
-    if (fs.existsSync(similarBooksFile)) {
-      const similarData = JSON.parse(fs.readFileSync(similarBooksFile, 'utf-8'));
-      const books = similarData.similarBooks || similarData.books || [];
-      const topBooks = books.slice(0, 3); // 取前3本
-      
-      console.log(`   分析 ${topBooks.length} 本竞品...\n`);
-      
-      // 为每本书生成示例数据
-      topBooks.forEach(book => {
-        execSync(`${reverseEngineerScript} analyze-ads "${book.title}"`, {
-          cwd: outputDir,
-          stdio: 'inherit'
-        });
-      });
-      
-      // 生成综合人群画像
-      console.log('\n   生成综合人群画像...\n');
-      execSync(`${reverseEngineerScript} generate-profile`, {
-        cwd: outputDir,
-        stdio: 'inherit'
-      });
-      
-      // 将生成的画像移动到输出目录
-      const competitorDir = path.join(outputDir, 'competitor-analysis');
-      if (fs.existsSync(competitorDir)) {
-        const profileFile = path.join(competitorDir, 'audience-profile-synthesized.json');
-        if (fs.existsSync(profileFile)) {
-          const targetFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
-          fs.copyFileSync(profileFile, targetFile);
-          console.log(`✅ 精确人群画像已保存: audience-profile-reverse-engineered.json\n`);
-        }
-      }
-    } else {
-      console.error('⚠️  未找到相似书籍数据，跳过反向工程\n');
-    }
-  } catch (error) {
-    console.error('⚠️  反向工程失败:', error.message);
-    console.error('   继续执行...\n');
+function extractJson(raw) {
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start) {
+    return raw.substring(start, end + 1);
   }
+  return raw.trim();
 }
 
 // 启动工作流
