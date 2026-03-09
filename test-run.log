@@ -1,0 +1,72 @@
+📚 Step 1/6: 解析章节文本...
+✅ 找到 8 个章节
+✅ 章节已保存到: test-output/chapters
+✅ 分析提示词已生成: test-output/analysis-prompt.txt
+
+🚀 启动全自动分析流程...
+🔄 使用两步提取模式（全章节覆盖）
+🤖 Step 2a/6: 正在提取章节梗概...
+⏳ 请稍候 (预计 30-60 秒)...
+[2026-03-09T12:24:19.581Z] [INFO] ▶️  Step chapter-summary started (attempt 1)
+[2026-03-09T12:24:56.176Z] [INFO] 章节梗概提取成功，覆盖 8 章
+[2026-03-09T12:24:56.176Z] [INFO] ✅ Step chapter-summary completed in 36.6s
+✅ 章节梗概已保存: test-output/chapter-summaries.json
+🤖 Step 2b/6: 正在提取书籍核心基因 (DNA)...
+⏳ 请稍候 (预计 20-40 秒)...
+[2026-03-09T12:24:56.177Z] [INFO] ▶️  Step dna-extraction started (attempt 1)
+[2026-03-09T12:25:23.444Z] [INFO] 检测到精简格式，正在转换为标准格式...
+[2026-03-09T12:25:23.444Z] [INFO] DNA 提取成功，包含 6 个分析维度
+✅ DNA 提取完成: test-output/book-analysis.json
+[2026-03-09T12:25:23.445Z] [INFO] ✅ Step dna-extraction completed in 27.3s
+
+🔗 正在触发后续自动化工作流 (画像、卖点、创意)...
+🤖 开始全自动分析工作流...
+
+✅ Step 2/6: 书籍核心基因 (DNA) 已就绪
+   类型: 现代言情/治愈系
+   关键词: 芭蕾舞者, 校园霸凌, 暖男vs冰山, 治愈系, 成长蜕变
+
+👥 Step 3/6: 正在自主生成目标受众画像...
+[2026-03-09T12:25:23.476Z] [INFO] ▶️  Step profile-generation started (attempt 1)
+[2026-03-09T12:25:23.477Z] [INFO] 正在调用 AI 生成受众画像...
+[2026-03-09T12:26:24.397Z] [INFO] 受众画像生成成功，包含 10 个维度
+   ✅ 受众画像已生成
+
+[2026-03-09T12:26:24.398Z] [INFO] ✅ Step profile-generation completed in 60.9s
+📊 Step 4/6: 正在提炼适配卖点并进行多维度打分...
+[2026-03-09T12:26:24.399Z] [INFO] ▶️  Step selling-points-generation started (attempt 1)
+[2026-03-09T12:26:24.399Z] [INFO] 正在调用 AI 提炼适配卖点...
+[2026-03-09T12:26:44.860Z] [INFO] 卖点提炼成功，共 5 个卖点
+   ✅ 适配卖点已生成
+
+[2026-03-09T12:26:44.860Z] [INFO] ✅ Step selling-points-generation completed in 20.5s
+🎬 Step 5/6: 正在产出高转化广告创意方向...
+[2026-03-09T12:26:44.861Z] [INFO] ▶️  Step creative-generation started (attempt 1)
+[2026-03-09T12:26:44.862Z] [INFO] 正在调用 AI 产出创意方向...
+[2026-03-09T12:27:33.865Z] [WARN] ⚠️  Attempt 1/3 failed: Failed to extract valid JSON from response
+[2026-03-09T12:27:35.866Z] [INFO] 正在调用 AI 产出创意方向...
+[2026-03-09T12:28:26.603Z] [WARN] ⚠️  Attempt 2/3 failed: Failed to extract valid JSON from response
+[2026-03-09T12:28:30.608Z] [INFO] 正在调用 AI 产出创意方向...
+[2026-03-09T12:29:28.018Z] [ERROR] ❌ Step creative-generation failed: creative-generation failed after 3 attempts
+[2026-03-09T12:29:28.018Z] [ERROR] 工作流执行中断: creative-generation failed after 3 attempts
+❌ Error details saved to: test-output/.error-workflow.json
+
+📊 工作流执行总结:
+   总步骤: 5
+   ✅ 完成: 4
+   ❌ 失败: 1
+   ⏱️  总耗时: 308.4s
+
+📝 详细日志: test-output/.workflow.log
+[2026-03-09T12:29:28.023Z] [ERROR] 全自动流程执行失败: Command failed: /root/.openclaw/workspace/book-parser/auto-workflow "test-output/.task.json"
+❌ Error details saved to: test-output/.error-book-parser.json
+
+📊 工作流执行总结:
+   总步骤: 2
+   ✅ 完成: 2
+   ❌ 失败: 0
+   ⏱️  总耗时: 308.4s
+
+📝 详细日志: test-output/.workflow.log
+
+❌ 全自动流程执行失败: Command failed: /root/.openclaw/workspace/book-parser/auto-workflow "test-output/.task.json"
