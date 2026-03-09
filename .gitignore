@@ -1,1 +1,37 @@
+# Node modules
+node_modules/
+
+# Output directories
+output/
 test-output/
+test-run-output/
+*-output/
+
+# Test files
+test-*.js
+
+# Error logs
+.error-*.json
+
+# Progress tracking
+.progress.json
+.workflow.log
+.task.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local

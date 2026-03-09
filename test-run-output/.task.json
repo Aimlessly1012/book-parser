@@ -1,8 +1,0 @@
-{
-  "outputDir": "test-run-output",
-  "apiKey": "ak-e2331aa4f34041cba8256cc9051ac70d",
-  "apiProvider": "claude",
-  "model": "claude-sonnet-4-5-20250929",
-  "baseUrl": "https://api.routin.ai",
-  "timestamp": 1773026529426
-}
