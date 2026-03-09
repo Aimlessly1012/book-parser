@@ -18,6 +18,7 @@ const AIService = require('./lib/ai-service');
 const JsonExtractor = require('./lib/json-extractor');
 const ProgressTracker = require('./lib/progress-tracker');
 const { ErrorHandler } = require('./lib/error-handler');
+const EnhancedPrompts = require('./lib/enhanced-prompts');
 
 // 读取任务文件
 const taskFile = process.argv[2];
@@ -151,34 +152,9 @@ async function runWorkflow() {
  */
 async function runAutonomousProfileGeneration() {
   const ourBook = ErrorHandler.readJsonFile(analysisFile);
-  const profilePrompt = `你是一位专业的人群画像分析师。请根据以下书籍分析结果，反推并生成一个极其详细的目标人群画像。不需要参考竞品，直接从本书的核心基因、情节走向和情感冲突中推断。
-
-# 书籍深度分析 (DNA)
-${JSON.stringify(ourBook, null, 2)}
-
-# 任务目标
-请输出 JSON 格式（只输出 JSON）：
-{
-  "primary": {
-    "age": "年龄段",
-    "gender": "性别倾向",
-    "occupation": ["职场人", "学生"],
-    "location": ["美国", "东南亚"],
-    "painPoints": ["痛点1", "痛点2"],
-    "desires": ["动机1", "动机2"]
-  },
-  "behavioral": {
-    "readingHabits": "阅读场景描述",
-    "genreFamiliarity": "熟悉程度",
-    "platforms": ["TikTok", "WebNovel"]
-  },
-  "psychographics": {
-    "psychologicalDrivers": "深层心理驱动力",
-    "aesthetic": "审美偏好（视频画面风格）",
-    "readingTriggers": "触发阅读、点击的核心点"
-  },
-  "keyInsights": ["洞察1", "洞察2"]
-}`;
+  
+  // 使用增强版 prompt
+  const profilePrompt = EnhancedPrompts.audienceProfile(ourBook);
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
   tracker.log('info', '正在调用 AI 生成受众画像...');
@@ -205,34 +181,8 @@ async function runAutonomousSellingPointGeneration() {
   
   const profile = ErrorHandler.readJsonFile(profileFile);
 
-  const generationPrompt = `你是一位顶尖的网文出海营销专家。请根据书籍分析结果和目标受众画像，提炼出最能打动该人群的**适配卖点**，并进行 1-10 分深度评分。
-
-# 书籍 DNA
-${JSON.stringify(ourBook, null, 2)}
-
-# 目标受众画像
-${JSON.stringify(profile, null, 2)}
-
-# 任务要求
-请输出 JSON 格式（只输出 JSON）：
-{
-  "finalSellingPoints": [
-    {
-      "pointId": "SP001",
-      "title": "卖点标题",
-      "oneLinePitch": "一句话核心文案",
-      "priority": "极高/中/低",
-      "psychologicalTriggers": "背后的心理动机",
-      "scoring": {
-        "marketAppeal": 9,
-        "uniqueness": 8,
-        "emotionalImpact": 10,
-        "overallScore": 9
-      }
-    }
-  ],
-  "competitiveAdvantage": { "summary": "核心竞争力评价" }
-}`;
+  // 使用增强版 prompt
+  const generationPrompt = EnhancedPrompts.sellingPoints(ourBook, profile);
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
   tracker.log('info', '正在调用 AI 提炼适配卖点...');
@@ -260,28 +210,8 @@ async function runAutonomousCreativeGeneration() {
   
   const sellingPoints = ErrorHandler.readJsonFile(sellingPointsFile);
 
-  const creativePrompt = `你是一位顶级效果广告创意总监。请结合书籍基因、受众画像和核心卖点，产出高转化的广告创意方向（Facebook/TikTok）。
-
-# 输入数据
-- 核心信息: ${JSON.stringify(ourBook.bookAnalysis.basicInfo, null, 2)}
-- 角色背景: ${JSON.stringify(ourBook.bookAnalysis.characters.protagonist, null, 2)}
-- 受众画像: ${JSON.stringify(profile, null, 2)}
-- 核心卖点: ${JSON.stringify(sellingPoints.finalSellingPoints, null, 2)}
-
-# 产出目标
-请输出 JSON 格式（只输出 JSON）：
-{
-  "creativeDirections": [
-    {
-      "pointId": "SP001",
-      "creativeHook": "第一道视角视觉描述",
-      "tiktok": { "videoScript": "视频前3秒、中间转折及结尾脚本", "caption": "配文" },
-      "visualBrief": "视觉画面细节要求",
-      "emotionalAngle": "挖掘的心理切入点"
-    }
-  ]
-}
-`;
+  // 使用增强版 prompt
+  const creativePrompt = EnhancedPrompts.creativeDirections(ourBook, profile, sellingPoints);
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
   tracker.log('info', '正在调用 AI 产出创意方向...');
