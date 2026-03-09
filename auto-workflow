@@ -172,27 +172,71 @@ async function runAutonomousProfileGeneration() {
 }
 
 /**
- * 运行核心卖点提炼与评分 (DNA + Profile -> Selling Points)
+ * 运行核心卖点提炼与评分 (基于章节梗概)
  */
 async function runAutonomousSellingPointGeneration() {
-  const ourBook = ErrorHandler.readJsonFile(analysisFile);
   const profileFile = path.join(outputDir, 'audience-profile-reverse-engineered.json');
-  ErrorHandler.validateFiles(['audience-profile-reverse-engineered.json'], outputDir);
+  const summaryFile = path.join(outputDir, 'chapter-summaries.json');
   
-  const profile = ErrorHandler.readJsonFile(profileFile);
+  // 优先使用章节梗概（如果存在）
+  if (fs.existsSync(summaryFile)) {
+    tracker.log('info', '使用章节梗概提炼卖点');
+    
+    const summaries = ErrorHandler.readJsonFile(summaryFile);
+    const profile = ErrorHandler.readJsonFile(profileFile);
+    
+    // 提取核心信息
+    const coreEvents = summaries.chapters?.flatMap(ch => ch.keyEvents || []).slice(0, 10);
+    const coreConflicts = summaries.chapters?.map(ch => ch.conflict).filter(Boolean).slice(0, 5);
+    const coreEmotions = summaries.chapters?.map(ch => ch.emotion).filter(Boolean).slice(0, 5);
+    
+    const generationPrompt = `你是网文营销专家。基于章节梗概提炼核心卖点。
 
-  // 只提取核心字段，大幅减少输入
-  const coreData = {
-    genre: ourBook.bookAnalysis?.basicInfo?.genre,
-    hook: ourBook.bookAnalysis?.basicInfo?.coreHook,
-    tags: ourBook.bookAnalysis?.basicInfo?.keywords?.slice(0, 5),
-    lead: ourBook.bookAnalysis?.characters?.protagonist?.name,
-    conflicts: ourBook.bookAnalysis?.plot?.mainConflicts?.slice(0, 3),
-    age: profile.primary?.age,
-    pain: profile.primary?.painPoints?.slice(0, 5)
-  };
+# 章节梗概
+${JSON.stringify(summaries.chapters?.map(ch => ({
+  ch: ch.chapter,
+  summary: ch.summary,
+  events: ch.keyEvents,
+  emotion: ch.emotion
+})), null, 2)}
 
-  const generationPrompt = `你是网文营销专家。提炼核心卖点并打分。
+# 受众痛点
+${profile.primary?.painPoints?.slice(0, 5).join(', ')}
+
+输出JSON（简洁）:
+{"finalSellingPoints":[{"pointId":"SP001","title":"卖点标题（网文风格）","oneLinePitch":"一句话文案（直白刺激）","priority":"极高","psychologicalTriggers":"心理触发点","scoring":{"marketAppeal":9,"uniqueness":8,"emotionalImpact":10,"overallScore":9}}],"competitiveAdvantage":{"summary":"核心竞争力"}}`;
+
+    const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
+    tracker.log('info', '正在调用 AI 提炼适配卖点...');
+    
+    const result = await aiService.chat(generationPrompt);
+    const jsonContent = JsonExtractor.extract(result);
+    const parsed = JSON.parse(jsonContent);
+    
+    tracker.log('info', `卖点提炼成功，共 ${parsed.finalSellingPoints?.length || 0} 个卖点`);
+    
+    const outputFile = path.join(outputDir, 'selling-points-compare.json');
+    ErrorHandler.writeJsonFile(outputFile, parsed);
+    console.log('   ✅ 适配卖点已生成\n');
+    
+  } else {
+    // 降级方案：使用 DNA 和受众画像
+    tracker.log('info', '章节梗概不存在，使用 DNA 数据');
+    
+    const ourBook = ErrorHandler.readJsonFile(analysisFile);
+    const profile = ErrorHandler.readJsonFile(profileFile);
+    
+    const coreData = {
+      genre: ourBook.bookAnalysis?.basicInfo?.genre,
+      hook: ourBook.bookAnalysis?.basicInfo?.coreHook,
+      tags: ourBook.bookAnalysis?.basicInfo?.keywords?.slice(0, 5),
+      lead: ourBook.bookAnalysis?.characters?.protagonist?.name,
+      conflicts: ourBook.bookAnalysis?.plot?.mainConflicts?.slice(0, 3),
+      age: profile.primary?.age,
+      pain: profile.primary?.painPoints?.slice(0, 5)
+    };
+
+    const generationPrompt = `你是网文营销专家。提炼核心卖点并打分。
 
 # 核心信息
 类型: ${coreData.genre}
@@ -206,40 +250,21 @@ async function runAutonomousSellingPointGeneration() {
 痛点: ${coreData.pain?.join(', ')}
 
 输出JSON（简洁）:
-\`\`\`json
-{
-  "finalSellingPoints": [
-    {
-      "pointId": "SP001",
-      "title": "卖点标题（网文风格）",
-      "oneLinePitch": "一句话文案（直白刺激）",
-      "priority": "极高",
-      "psychologicalTriggers": "心理触发点",
-      "scoring": {
-        "marketAppeal": 9,
-        "uniqueness": 8,
-        "emotionalImpact": 10,
-        "overallScore": 9
-      }
-    }
-  ],
-  "competitiveAdvantage": { "summary": "核心竞争力" }
-}
-\`\`\``;
+{"finalSellingPoints":[{"pointId":"SP001","title":"卖点标题（网文风格）","oneLinePitch":"一句话文案（直白刺激）","priority":"极高","psychologicalTriggers":"心理触发点","scoring":{"marketAppeal":9,"uniqueness":8,"emotionalImpact":10,"overallScore":9}}],"competitiveAdvantage":{"summary":"核心竞争力"}}`;
 
-  const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
-  tracker.log('info', '正在调用 AI 提炼适配卖点...');
-  
-  const result = await aiService.chat(generationPrompt);
-  const jsonContent = JsonExtractor.extract(result);
-  
-  // 验证 JSON 格式
-  const parsed = JSON.parse(jsonContent);
-  tracker.log('info', `卖点提炼成功，共 ${parsed.finalSellingPoints?.length || 0} 个卖点`);
-
-  const outputFile = path.join(outputDir, 'selling-points-compare.json');
-  ErrorHandler.writeJsonFile(outputFile, parsed);
-  console.log('   ✅ 适配卖点已生成\n');
+    const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
+    tracker.log('info', '正在调用 AI 提炼适配卖点...');
+    
+    const result = await aiService.chat(generationPrompt);
+    const jsonContent = JsonExtractor.extract(result);
+    const parsed = JSON.parse(jsonContent);
+    
+    tracker.log('info', `卖点提炼成功，共 ${parsed.finalSellingPoints?.length || 0} 个卖点`);
+    
+    const outputFile = path.join(outputDir, 'selling-points-compare.json');
+    ErrorHandler.writeJsonFile(outputFile, parsed);
+    console.log('   ✅ 适配卖点已生成\n');
+  }
 }
 
 /**
