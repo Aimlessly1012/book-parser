@@ -20,6 +20,9 @@ const JsonExtractor = require('./lib/json-extractor');
 const ProgressTracker = require('./lib/progress-tracker');
 const { ErrorHandler } = require('./lib/error-handler');
 const EnhancedPrompts = require('./lib/enhanced-prompts');
+const CompactPrompts = require('./lib/compact-prompts');
+const UltraCompactPrompts = require('./lib/ultra-compact-prompts');
+const DataAdapter = require('./lib/data-adapter');
 
 // 解析命令行参数
 const args = process.argv.slice(2);
@@ -33,11 +36,14 @@ if (!command || !bookFile) {
   console.log('  --output <dir>         输出目录 (默认: ./output)');
   console.log('  --chapters <n>         解析章节数量 (默认: 全部)');
   console.log('  --auto                 开启全自动 AI 营销分析 (DNA -> 画像 -> 卖点 -> 创意)');
+  console.log('  --compact              精简模式（前3章，减少token）');
+  console.log('  --ultra-compact        超精简模式（前3章，最小输出，避免100秒超时）⚡');
   console.log('  --api-key <key>        AI API Key (也可通过环境变量 API_KEY 设置)');
   console.log('  --api-provider <p>     AI 提供商: gemini|claude (默认: gemini)');
   console.log('');
   console.log('Examples:');
   console.log('  ./book-parser analyze book.txt --auto --api-key YOUR_KEY');
+  console.log('  ./book-parser analyze book.txt --auto --ultra-compact  # 长篇推荐');
   process.exit(1);
 }
 
@@ -45,6 +51,8 @@ if (!command || !bookFile) {
 let outputDir = './output';
 let maxChapters = null;
 let autoAnalyze = false;
+let compactMode = false;
+let ultraCompactMode = false;
 let apiKey = (process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.CLAUDE_API_KEY || config.apiKey);
 let apiProvider = config.provider || 'gemini';
 
@@ -57,6 +65,11 @@ for (let i = 2; i < args.length; i++) {
     i++;
   } else if (args[i] === '--auto') {
     autoAnalyze = true;
+  } else if (args[i] === '--ultra-compact') {
+    ultraCompactMode = true;
+    compactMode = false;
+  } else if (args[i] === '--compact') {
+    compactMode = true;
   } else if (args[i] === '--api-key' && args[i + 1]) {
     apiKey = args[i + 1];
     i++;
@@ -171,7 +184,13 @@ async function runFullAutomation() {
     );
     
     const jsonContent = JsonExtractor.extract(analysisResult);
-    const parsed = JSON.parse(jsonContent); // 验证 JSON 格式
+    let parsed = JSON.parse(jsonContent); // 验证 JSON 格式
+    
+    // 如果是超精简模式，转换为标准格式
+    if (ultraCompactMode && !parsed.bookAnalysis) {
+      tracker.log('info', '检测到超精简格式，正在转换为标准格式...');
+      parsed = DataAdapter.adaptUltraCompactToStandard(parsed);
+    }
     
     tracker.log('info', `DNA 提取成功，包含 ${Object.keys(parsed.bookAnalysis || {}).length} 个分析维度`);
 
@@ -225,6 +244,14 @@ function generateAnalysisPrompt(chapters) {
   
   const sampleChapters = chapters.slice(0, Math.min(10, chapters.length));
   
-  // 使用增强版 prompt
-  return EnhancedPrompts.dnaExtraction(bookInfo, sampleChapters);
+  // 根据模式选择 prompt
+  if (ultraCompactMode) {
+    console.log('⚡ 使用超精简模式（前3章，最小输出，<100秒）');
+    return UltraCompactPrompts.dnaExtractionUltraCompact(bookInfo, sampleChapters);
+  } else if (compactMode) {
+    console.log('📦 使用精简模式（前3章，减少token消耗）');
+    return CompactPrompts.dnaExtractionCompact(bookInfo, sampleChapters);
+  } else {
+    return EnhancedPrompts.dnaExtraction(bookInfo, sampleChapters);
+  }
 }

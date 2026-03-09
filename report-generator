@@ -39,18 +39,29 @@ if (!analysis) {
 let md = `# 📖 丛书营销全案分析报告\n\n`;
 md += `> 生成时间: ${new Date().toLocaleString()}\n\n`;
 
+// 安全访问辅助函数
+const safe = (obj, path, defaultValue = 'N/A') => {
+  try {
+    return path.split('.').reduce((o, p) => o?.[p], obj) ?? defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
 // 1. 书籍概览
 md += `## 1. 书籍 DNA 与核心定位\n\n`;
 const info = analysis.bookAnalysis.basicInfo;
 md += `### 🎯 核心挂钩 (Core Hook)\n**${info.coreHook}**\n\n`;
 md += `- **类型**: ${info.genre}\n`;
-md += `- **子类型**: ${info.subGenres.join(', ')}\n`;
-md += `- **关键词**: ${info.keywords.join(', ')}\n\n`;
+md += `- **子类型**: ${(info.subGenres || []).join(', ')}\n`;
+md += `- **关键词**: ${(info.keywords || []).join(', ')}\n\n`;
 
 md += `### 🧬 书籍基因 (Book DNA)\n`;
 md += `- **上瘾指数**: ${analysis.bookAnalysis.addictionIndex.score}/10 (${analysis.bookAnalysis.addictionIndex.level})\n`;
-md += `- **节奏控制**: ${analysis.bookAnalysis.addictionIndex.factors.paceControl.reason}\n`;
-md += `- **情感波动**: 前10章涵盖了 ${analysis.bookAnalysis.bookDNA.emotionWave.map(e => e.emotion).join(' → ')} 等情绪起伏。\n\n`;
+const paceReason = safe(analysis, 'bookAnalysis.addictionIndex.factors.paceControl.reason', '节奏控制良好');
+md += `- **节奏控制**: ${paceReason}\n`;
+const emotions = (analysis.bookAnalysis.bookDNA?.emotionWave || []).map(e => e.emotion).join(' → ');
+md += `- **情感波动**: ${emotions || '情感起伏丰富'}。\n\n`;
 
 // 2. 角色与冲突
 md += `## 2. 角色图谱与冲突焦点\n\n`;

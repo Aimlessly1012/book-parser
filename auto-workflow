@@ -210,8 +210,8 @@ async function runAutonomousCreativeGeneration() {
   
   const sellingPoints = ErrorHandler.readJsonFile(sellingPointsFile);
 
-  // 使用增强版 prompt
-  const creativePrompt = EnhancedPrompts.creativeDirections(ourBook, profile, sellingPoints);
+  // 使用精简版 prompt（避免超时）
+  const creativePrompt = EnhancedPrompts.creativeDirectionsCompact(ourBook, profile, sellingPoints);
 
   const aiService = new AIService({ apiKey, provider: apiProvider, model, baseUrl });
   tracker.log('info', '正在调用 AI 产出创意方向...');
