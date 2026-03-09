@@ -22,6 +22,7 @@ const { ErrorHandler } = require('./lib/error-handler');
 const EnhancedPrompts = require('./lib/enhanced-prompts');
 const CompactPrompts = require('./lib/compact-prompts');
 const UltraCompactPrompts = require('./lib/ultra-compact-prompts');
+const TwoStepPrompts = require('./lib/two-step-prompts');
 const DataAdapter = require('./lib/data-adapter');
 
 // 解析命令行参数
@@ -36,14 +37,15 @@ if (!command || !bookFile) {
   console.log('  --output <dir>         输出目录 (默认: ./output)');
   console.log('  --chapters <n>         解析章节数量 (默认: 全部)');
   console.log('  --auto                 开启全自动 AI 营销分析 (DNA -> 画像 -> 卖点 -> 创意)');
+  console.log('  --two-step             两步提取（先梗概后分析，覆盖全部章节）🔥推荐');
   console.log('  --compact              精简模式（前3章，减少token）');
   console.log('  --ultra-compact        超精简模式（前3章，最小输出，避免100秒超时）⚡');
   console.log('  --api-key <key>        AI API Key (也可通过环境变量 API_KEY 设置)');
   console.log('  --api-provider <p>     AI 提供商: gemini|claude (默认: gemini)');
   console.log('');
   console.log('Examples:');
-  console.log('  ./book-parser analyze book.txt --auto --api-key YOUR_KEY');
-  console.log('  ./book-parser analyze book.txt --auto --ultra-compact  # 长篇推荐');
+  console.log('  ./book-parser analyze book.txt --auto --two-step      # 推荐：全章节分析');
+  console.log('  ./book-parser analyze book.txt --auto --ultra-compact # 快速：前3章');
   process.exit(1);
 }
 
@@ -53,6 +55,7 @@ let maxChapters = null;
 let autoAnalyze = false;
 let compactMode = false;
 let ultraCompactMode = false;
+let twoStepMode = false;
 let apiKey = (process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.CLAUDE_API_KEY || config.apiKey);
 let apiProvider = config.provider || 'gemini';
 
@@ -65,11 +68,17 @@ for (let i = 2; i < args.length; i++) {
     i++;
   } else if (args[i] === '--auto') {
     autoAnalyze = true;
+  } else if (args[i] === '--two-step') {
+    twoStepMode = true;
+    ultraCompactMode = false;
+    compactMode = false;
   } else if (args[i] === '--ultra-compact') {
     ultraCompactMode = true;
     compactMode = false;
+    twoStepMode = false;
   } else if (args[i] === '--compact') {
     compactMode = true;
+    twoStepMode = false;
   } else if (args[i] === '--api-key' && args[i + 1]) {
     apiKey = args[i + 1];
     i++;
@@ -167,29 +176,98 @@ async function runFullAutomation() {
       baseUrl: config.baseUrl
     });
 
-    console.log('🤖 Step 2/6: 正在提取书籍核心基因 (DNA)...');
-    console.log('⏳ 请稍候 (预计 30-90 秒)...');
+    let parsed;
 
-    tracker.startStep('dna-extraction');
-    
-    const analysisResult = await ErrorHandler.retry(
-      () => aiService.chat(analysisPrompt),
-      {
-        maxRetries: 3,
-        delayMs: 3000,
-        backoff: true,
-        stepName: 'dna-extraction',
-        onRetry: (msg) => tracker.log('warn', msg)
-      }
-    );
-    
-    const jsonContent = JsonExtractor.extract(analysisResult);
-    let parsed = JSON.parse(jsonContent); // 验证 JSON 格式
-    
-    // 如果是超精简模式，转换为标准格式
-    if (ultraCompactMode && !parsed.bookAnalysis) {
-      tracker.log('info', '检测到超精简格式，正在转换为标准格式...');
+    if (twoStepMode) {
+      // 两步提取模式
+      console.log('🔄 使用两步提取模式（全章节覆盖）');
+      console.log('🤖 Step 2a/6: 正在提取章节梗概...');
+      console.log('⏳ 请稍候 (预计 30-60 秒)...');
+
+      tracker.startStep('chapter-summary');
+      
+      // Step 2a: 提取章节梗概
+      const summaryPrompt = TwoStepPrompts.chapterSummaryExtraction(chapters);
+      const summaryResult = await ErrorHandler.retry(
+        () => aiService.chat(summaryPrompt),
+        {
+          maxRetries: 3,
+          delayMs: 3000,
+          backoff: true,
+          stepName: 'chapter-summary',
+          onRetry: (msg) => tracker.log('warn', msg)
+        }
+      );
+      
+      const summaryJson = JsonExtractor.extract(summaryResult);
+      const chapterSummaries = JSON.parse(summaryJson);
+      
+      tracker.log('info', `章节梗概提取成功，覆盖 ${chapterSummaries.chapters?.length || 0} 章`);
+      tracker.completeStep('chapter-summary', {
+        chapters: chapterSummaries.chapters?.length
+      });
+
+      // 保存梗概
+      const summaryFile = path.join(outputDir, 'chapter-summaries.json');
+      ErrorHandler.writeJsonFile(summaryFile, chapterSummaries);
+      console.log(`✅ 章节梗概已保存: ${summaryFile}`);
+
+      // Step 2b: 基于梗概做 DNA 分析
+      console.log('🤖 Step 2b/6: 正在提取书籍核心基因 (DNA)...');
+      console.log('⏳ 请稍候 (预计 20-40 秒)...');
+
+      tracker.startStep('dna-extraction');
+      
+      const bookInfo = {
+        totalChapters: chapters.length,
+        totalWords: chapters.reduce((sum, ch) => sum + ch.wordCount, 0)
+      };
+      
+      const dnaPrompt = TwoStepPrompts.dnaFromSummaries(bookInfo, chapterSummaries);
+      const analysisResult = await ErrorHandler.retry(
+        () => aiService.chat(dnaPrompt),
+        {
+          maxRetries: 3,
+          delayMs: 3000,
+          backoff: true,
+          stepName: 'dna-extraction',
+          onRetry: (msg) => tracker.log('warn', msg)
+        }
+      );
+      
+      const jsonContent = JsonExtractor.extract(analysisResult);
+      parsed = JSON.parse(jsonContent);
+      
+      // 转换为标准格式
+      tracker.log('info', '检测到精简格式，正在转换为标准格式...');
       parsed = DataAdapter.adaptUltraCompactToStandard(parsed);
+      
+    } else {
+      // 原有的单步提取模式
+      console.log('🤖 Step 2/6: 正在提取书籍核心基因 (DNA)...');
+      console.log('⏳ 请稍候 (预计 30-90 秒)...');
+
+      tracker.startStep('dna-extraction');
+      
+      const analysisResult = await ErrorHandler.retry(
+        () => aiService.chat(analysisPrompt),
+        {
+          maxRetries: 3,
+          delayMs: 3000,
+          backoff: true,
+          stepName: 'dna-extraction',
+          onRetry: (msg) => tracker.log('warn', msg)
+        }
+      );
+      
+      const jsonContent = JsonExtractor.extract(analysisResult);
+      parsed = JSON.parse(jsonContent);
+      
+      // 如果是超精简模式，转换为标准格式
+      if (ultraCompactMode && !parsed.bookAnalysis) {
+        tracker.log('info', '检测到超精简格式，正在转换为标准格式...');
+        parsed = DataAdapter.adaptUltraCompactToStandard(parsed);
+      }
     }
     
     tracker.log('info', `DNA 提取成功，包含 ${Object.keys(parsed.bookAnalysis || {}).length} 个分析维度`);
